@@ -10,6 +10,8 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: chamilo
 */
 
+require_once plugin_dir_path( __FILE__ ) . 'admin/ChamiloConnect.php';
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
@@ -203,7 +205,8 @@ if (!function_exists('wdm_chamilo_update_page_id')) {
     }
 }
 
-function chamilo_configuration_configuration_callback(){
+function chamilo_configuration_configuration_callback()
+{
 
     if (isset($_POST['submit'])) {
         $urlChamilo = $_POST['url_chamilo'];
@@ -220,35 +223,43 @@ function chamilo_configuration_configuration_callback(){
         <h1>Configuración Chamilo Connect</h1>
         <div id="pw_wrap">
             <form method="post">
-
                 <table class="form-table">
                     <tbody>
-                        <tr>
-                            <th scope="row">
-                                <label for="url_chamilo">Dirección de Chamilo (URL)</label>
-                            </th>
-                            <td>
-                                <input type="text" id="url_chamilo" name="url_chamilo" class="regular-text" value="<?php echo $urlChamilo; ?>" required>
-                                <p class="description">Escribe la url del aula virtual chamilo para conectar</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="apikey_chamilo">API KEY Chamilo:</label>
-                            </th>
-                            <td>
-                                <input type="text" id="apikey_chamilo" name="apikey_chamilo" class="regular-text" value="<?php echo $apiKeyChamilo; ?>" required>
-                                <p class="description">El Segurity Key lo puedes encontrar en el archivo de configuration.php de tu aula virtual Chamilo</p>
-                            </td>
-                        </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="url_chamilo">Dirección de Chamilo (URL)</label>
+                        </th>
+                        <td>
+                            <input type="text" id="url_chamilo" name="url_chamilo" class="regular-text"
+                                   value="<?php echo $urlChamilo; ?>" required>
+                            <p class="description">Escribe la url del aula virtual chamilo para conectar</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="apikey_chamilo">API KEY Chamilo:</label>
+                        </th>
+                        <td>
+                            <input type="text" id="apikey_chamilo" name="apikey_chamilo" class="regular-text"
+                                   value="<?php echo $apiKeyChamilo; ?>" required>
+                            <p class="description">El Segurity Key lo puedes encontrar en el archivo de
+                                configuration.php de tu aula virtual Chamilo</p>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
                 <div class="submit">
-                    <input type="submit" name="submit" id="submit" class="button button-primary" value="Guardar cambios">
+                    <input type="submit" name="submit" id="submit" class="button button-primary"
+                           value="Guardar cambios">
                 </div>
             </form>
         </div>
     </div>
 
     <?php
+
+    $chamilo = new ChamiloConnect();
+    $apiKey = $chamilo->authenticate();
+
+    var_dump($chamilo->getUserCourses($apiKey));
 }
