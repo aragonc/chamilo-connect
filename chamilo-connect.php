@@ -76,22 +76,36 @@ function chamilo_create_pages_user()
                 'name' => esc_html_x('user-account', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('User Account', 'Page title', 'chamilo-connect'),
                 'content' => '[user_account]',
-                'option_key' => 'chamilo_useraccount_page_id',
-                'template' => $template_dir . 'tpl_user_account.php'
+                'option_key' => 'chamilo_user_account_page_id',
+                'template' => 'tpl_user_account.php'
             ),
             'mycourses' => array(
                 'name' => esc_html_x('my-courses', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('My Courses', 'Page title', 'chamilo-connect'),
                 'content' => '[user_my_courses]',
                 'option_key' => 'chamilo_my_courses_page_id',
-                'template' => $template_dir . 'tpl_user_my_courses.php'
+                'template' => 'tpl_user_my_courses.php'
             ),
             'certificates' => array(
                 'name' => esc_html_x('my-certificates', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('My Certificates', 'Page title', 'chamilo-connect'),
                 'content' => '[user_my_certificates]',
-                'option_key' => 'chamilo_courses_page_id',
-                'template' => $template_dir . 'tpl_user_my_certificates.php'
+                'option_key' => 'chamilo_certificates_page_id',
+                'template' => 'tpl_user_my_certificates.php'
+            ),
+            'login' => array(
+                'name' => esc_html_x('user-login', 'Page slug', 'chamilo-connect'),
+                'title' => esc_html_x('Login', 'Page title', 'chamilo-connect'),
+                'content' => '[user_login]',
+                'option_key' => 'chamilo_login_page_id',
+                'template' => 'tpl_user_login.php'
+            ),
+            'register' => array(
+                'name' => esc_html_x('user-register', 'Page slug', 'chamilo-connect'),
+                'title' => esc_html_x('Register', 'Page title', 'chamilo-connect'),
+                'content' => '[user_register]',
+                'option_key' => 'chamilo_register_page_id',
+                'template' => 'tpl_user_register.php'
             ),
         )
     );
@@ -100,41 +114,88 @@ function chamilo_create_pages_user()
     }
 }
 
-function chamilo_delete_pages()
+/**
+ * Add "Custom" template to page attribute template section.
+ */
+function chamilo_add_template_to_select($post_templates, $wp_theme, $post, $post_type): array
 {
-    $slugs = [
-        'user-account',
-        'my-courses',
-        'my-certificates'
+    // Add custom template named template-custom.php to select dropdown
+    return [
+        'tpl_user_login.php' => __('User Login'),
+        'tpl_user_account.php' => __('User Account'),
+        'tpl_user_my_certificates.php' => __('User Certificates'),
+        'tpl_user_my_courses.php' => __('User Courses'),
+        'tpl_user_register.php' => __('User Register')
     ];
-    foreach ($slugs as $slug) {
-        // Obtener el objeto de la página por su slug
-        $page = get_page_by_path($slug);
-        if ($page) {
-            // Eliminar la página
-            wp_delete_post($page->ID, true);
-        }
+}
+add_filter( 'theme_page_templates', 'chamilo_add_template_to_select', 10, 4 );
+
+/**
+ * @throws Exception
+ */
+function chamilo_load_plugin_template($template) {
+    $page_custom = get_page_template_slug();
+    switch ($page_custom){
+        case 'tpl_user_login.php':
+            if ($theme_file = locate_template(array('tpl_user_login.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_login.php';
+            }
+            break;
+        case 'tpl_user_register.php':
+            if ($theme_file = locate_template(array('tpl_user_register.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_register.php';
+            }
+            break;
+        case 'tpl_user_account.php':
+            if ($theme_file = locate_template(array('tpl_user_account.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_account.php';
+            }
+            break;
+        case 'tpl_user_my_certificates.php':
+            if ($theme_file = locate_template(array('tpl_user_my_certificates.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_my_certificates.php';
+            }
+            break;
+        case 'tpl_user_my_courses.php':
+            if ($theme_file = locate_template(array('tpl_user_my_courses.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_my_courses.php';
+            }
+            break;
+        default:
     }
 
+    return $template;
 }
+
+add_filter( 'template_include', 'chamilo_load_plugin_template' );
 
 if (!function_exists('chamilo_create_page')) {
     /**
      * Create a page and store the ID in an option.
      *
-     * @param mixed $slug Slug for the new page.
+     * @param string $slug Slug for the new page.
      * @param string $option_key Option name to store the page's ID.
      * @param string $page_title (default: '') Title for the new page.
      * @param string $page_content (default: '') Content for the new page.
      * @param string $page_template (default: '') Theme page template.
      * @return int page ID
      */
-    function chamilo_create_page(mixed $slug, string $option_key = '', string $page_title = '', string $page_content = '', string $page_template = ''): int
+    function chamilo_create_page(string $slug, string $option_key = '', string $page_title = '', string $page_content = '', string $page_template = ''): int
     {
         global $wpdb;
 
         // get all settings of settings general tab.
-        $eb_general_settings = array();
+        //$eb_general_settings = array();
         $eb_general_settings = get_option('chamilo_general', array());
 
         $option_value = 0;
@@ -205,24 +266,64 @@ if (!function_exists('wdm_chamilo_update_page_id')) {
     }
 }
 
+function chamilo_delete_pages()
+{
+    $slugs = [
+        'user-account',
+        'my-courses',
+        'my-certificates'
+    ];
+    foreach ($slugs as $slug) {
+        // Obtener el objeto de la página por su slug
+        $page = get_page_by_path($slug);
+        if ($page) {
+            // Eliminar la página
+            wp_delete_post($page->ID, true);
+        }
+    }
+
+}
+
+/**
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
 function chamilo_configuration_configuration_callback()
 {
-
-    if (isset($_POST['submit'])) {
-        $urlChamilo = $_POST['url_chamilo'];
-        $apiKeyChamilo = $_POST['apikey_chamilo'];
-        update_option('chamilo_connect_url', $urlChamilo);
-        update_option('chamilo_connect_apikey', $apiKeyChamilo);
-    }
     // Obtener los valores actuales de los datos guardados
     $urlChamilo = get_option('chamilo_connect_url');
     $apiKeyChamilo = get_option('chamilo_connect_apikey');
+    $userAdminChamilo = get_option('chamilo_connect_username');
+    $passAdminChamilo = get_option('chamilo_connect_password');
+
+    if (isset($_POST['save'])) {
+        $urlChamilo = $_POST['url_chamilo'];
+        $apiKeyChamilo = $_POST['apikey_chamilo'];
+
+        $userAdminChamilo = $_POST['username_chamilo'];
+        $passAdminChamilo = $_POST['password_chamilo'];
+
+        update_option('chamilo_connect_url', $urlChamilo);
+        update_option('chamilo_connect_apikey', $apiKeyChamilo);
+        update_option('chamilo_connect_username', $userAdminChamilo);
+        update_option('chamilo_connect_password', $passAdminChamilo);
+    }
+    $rps = false;
+    if ( isset( $_POST['test'] ) ) {
+        $chamilo = new ChamiloConnect();
+        $rps = $chamilo->connectStatus();
+
+    }
     ?>
 
     <div class="wrap">
         <h1>Configuración Chamilo Connect</h1>
+        <?php if($rps): ?>
+            <div class="update-nag notice notice-info inline">
+                Conección establecida correctamente con el Chamilo <strong><a target="_blank" href="<?php echo $urlChamilo; ?>"><?php echo $urlChamilo; ?></a></strong>
+            </div>
+        <?php endif; ?>
         <div id="pw_wrap">
-            <form method="post">
+            <form method="post" >
                 <table class="form-table">
                     <tbody>
                     <tr>
@@ -246,11 +347,36 @@ function chamilo_configuration_configuration_callback()
                                 configuration.php de tu aula virtual Chamilo</p>
                         </td>
                     </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <label for="username_chamilo">Usuario Administrador de Chamilo</label>
+                        </th>
+                        <td>
+                            <input type="text" id="username_chamilo" name="username_chamilo" class="regular-text"
+                                   value="<?php echo $userAdminChamilo; ?>">
+                            <p class="description">Te sugerimos colocar un usuario administrador diferente solo, para la conexión con Chamilo</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <label for="password_chamilo">Contraseña Administrador de Chamilo</label>
+                        </th>
+                        <td>
+                            <input type="password" id="password_chamilo" name="password_chamilo" class="regular-text"
+                                   value="<?php echo $passAdminChamilo; ?>">
+                            <p class="description">El usuario administrador de la conexión debe de tener una contraseña fuerte</p>
+                        </td>
+                    </tr>
+
                     </tbody>
                 </table>
                 <div class="submit">
-                    <input type="submit" name="submit" id="submit" class="button button-primary"
-                           value="Guardar cambios">
+                    <?php
+                    submit_button('Guardar datos de conexión', 'primary', 'save', false);
+                    submit_button('Probar la conexión', 'success', 'test', false);
+                    ?>
                 </div>
             </form>
         </div>
@@ -258,8 +384,5 @@ function chamilo_configuration_configuration_callback()
 
     <?php
 
-    $chamilo = new ChamiloConnect();
-    $apiKey = $chamilo->authenticate();
 
-    var_dump($chamilo->getUserCourses($apiKey));
 }

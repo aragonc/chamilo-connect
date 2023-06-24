@@ -2,8 +2,8 @@
 
 use GuzzleHttp\Client as GuzzleClient;
 $webserviceURL= get_option('chamilo_connect_url').'/main/webservices/api/';
-$webserviceUsername='aragcar@gmail.com';
-$webservicePassword='blender@pe2022';
+$webserviceUsername = get_option('chamilo_connect_username');
+$webservicePassword = get_option('chamilo_connect_password');
 
 class ChamiloConnect
 {
@@ -11,6 +11,32 @@ class ChamiloConnect
     public function __construct()
     {
         require_once plugin_dir_path(__FILE__) .'../vendor/autoload.php';
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function connectStatus(){
+        global $webserviceURL;
+        global $webserviceUsername;
+        global $webservicePassword;
+        $client = new GuzzleClient([
+            'base_uri' => $webserviceURL,
+        ]);
+
+        $response = $client->post('v2.php', [
+            'form_params' => [
+                'action' => 'authenticate',
+                'username' => $webserviceUsername,
+                'password' => $webservicePassword,
+            ],
+        ]);
+        $rsp = true;
+        if ($response->getStatusCode() !== 200) {
+            $rsp = false;
+        }
+
+        return $rsp;
     }
 
     public function authenticate() {
@@ -28,7 +54,6 @@ class ChamiloConnect
                 'password' => $webservicePassword,
             ],
         ]);
-
         if ($response->getStatusCode() !== 200) {
             throw new Exception('Entry denied with code : ' . $response->getStatusCode());
         }
