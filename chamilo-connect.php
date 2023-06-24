@@ -66,6 +66,38 @@ function chamilo_create_menu()
     );
 }
 
+//add css boostrap
+// Incluir Bootstrap CSS
+function bootstrap_css() {
+    $urlPlugin = plugin_dir_url( __FILE__ );
+    wp_enqueue_style( 'bootstrap_css',
+        'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css',
+        array(),
+        '4.1.3'
+    );
+    wp_enqueue_style( 'chamilo_css',
+        $urlPlugin.'css/style.css',
+        array(),
+        '1.0'
+    );
+}
+add_action( 'wp_enqueue_scripts', 'bootstrap_css');
+
+// Incluir Bootstrap JS y dependencia popper
+function bootstrap_js() {
+    wp_enqueue_script( 'popper_js',
+        'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js',
+        array(),
+        '1.14.3',
+        true);
+    wp_enqueue_script( 'bootstrap_js',
+        'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js',
+        array('jquery','popper_js'),
+        '4.1.3',
+        true);
+}
+add_action( 'wp_enqueue_scripts', 'bootstrap_js');
+
 function chamilo_create_pages_user()
 {
     $template_dir = plugin_dir_path(__FILE__) . 'templates/';

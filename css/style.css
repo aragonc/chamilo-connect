@@ -1,0 +1,32 @@
+.page-register{
+    padding: 2rem 0;
+}
+.title{
+    font-weight: 600;
+    padding: 15px 10px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+.register-user .form-group label{
+    font-size: 14px;
+    font-weight: 600;
+}
+.register-user .form-group .form-control{
+    background-color: #FFF !important;
+    border-radius: 10px;
+}
+.register-user .btn-primary {
+    background: #808de8;
+    border-radius: 0;
+    text-transform: uppercase;
+    border: 1px solid #808de8;
+    font-weight: bold;
+    padding: 10px 20px;
+    box-shadow: 10px 10px 0 2px rgba(128,141,232,.15);
+    margin-bottom: 2rem;
+}
+.register-user .help{
+    font-size: 12px;
+    padding: 1rem;
+    font-style:italic;
+}
