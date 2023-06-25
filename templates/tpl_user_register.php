@@ -4,6 +4,8 @@
  */
 
 get_header();
+$urlLogin = home_url().'/user-login';
+$urlLostPassword = home_url().'/user-lostpassword';
 
 ?>
     <div class="container">
@@ -16,6 +18,13 @@ get_header();
                 </div>
                 <div class="col-md-7">
                     <form method="post" action="" id="register-user" class="register-user">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-info text-register">
+                                    Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a> ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">

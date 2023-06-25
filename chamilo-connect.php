@@ -139,6 +139,13 @@ function chamilo_create_pages_user()
                 'option_key' => 'chamilo_register_page_id',
                 'template' => 'tpl_user_register.php'
             ),
+            'lostpassword' => array(
+                'name' => esc_html_x('user-lostpassword', 'Page slug', 'chamilo-connect'),
+                'title' => esc_html_x('Lost Password', 'Page title', 'chamilo-connect'),
+                'content' => '[user_lostpassword]',
+                'option_key' => 'chamilo_lostpassword_page_id',
+                'template' => 'tpl_user_lostpassword.php'
+            ),
         )
     );
     foreach ($pages as $page) {
@@ -157,7 +164,8 @@ function chamilo_add_template_to_select($post_templates, $wp_theme, $post, $post
         'tpl_user_account.php' => __('User Account'),
         'tpl_user_my_certificates.php' => __('User Certificates'),
         'tpl_user_my_courses.php' => __('User Courses'),
-        'tpl_user_register.php' => __('User Register')
+        'tpl_user_register.php' => __('User Register'),
+        'tpl_user_lostpassword.php' => __('User Lost Password')
     ];
 }
 add_filter( 'theme_page_templates', 'chamilo_add_template_to_select', 10, 4 );
@@ -201,6 +209,13 @@ function chamilo_load_plugin_template($template) {
                 $template = $theme_file;
             } else {
                 $template = plugin_dir_path(__FILE__).'templates/tpl_user_my_courses.php';
+            }
+            break;
+        case 'tpl_user_lostpassword.php':
+            if ($theme_file = locate_template(array('tpl_user_lostpassword.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_lostpassword.php';
             }
             break;
         default:
@@ -303,7 +318,10 @@ function chamilo_delete_pages()
     $slugs = [
         'user-account',
         'my-courses',
-        'my-certificates'
+        'my-certificates',
+        'user-login',
+        'user-register',
+        'user-lostpassword'
     ];
     foreach ($slugs as $slug) {
         // Obtener el objeto de la página por su slug

@@ -7,15 +7,18 @@
     margin-top: 1rem;
     margin-bottom: 1rem;
 }
-.register-user .form-group label{
+.register-user .form-group label,
+.login-user .form-group label{
     font-size: 14px;
     font-weight: 600;
 }
-.register-user .form-group .form-control{
+.register-user .form-group .form-control,
+.login-user .form-group .form-control{
     background-color: #FFF !important;
     border-radius: 10px;
 }
-.register-user .btn-primary {
+.register-user .btn-primary,
+.login-user .btn-primary{
     background: #808de8;
     border-radius: 0;
     text-transform: uppercase;
@@ -25,8 +28,32 @@
     box-shadow: 10px 10px 0 2px rgba(128,141,232,.15);
     margin-bottom: 2rem;
 }
+.register-user .btn-primary:hover,
+.login-user .btn-primary:hover{
+    color: #bdc8f2;
+    background: #808de8;
+    border: 1px solid #808de8;
+}
 .register-user .help{
     font-size: 12px;
     padding: 1rem;
     font-style:italic;
+}
+.login-user .btn-default {
+    border: 1px solid #808de8;
+    text-transform: uppercase;
+    border-radius: 0;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #4E4957;
+    padding: 10px 20px;
+    background: #ffffff;
+}
+.login-user .btn-default:hover {
+    color: #bdc8f2;
+    background-color: #fbfbff;
+    border: 1px solid #808de8;
+}
+.login-user .lost-password{
+    text-align: center;
 }
