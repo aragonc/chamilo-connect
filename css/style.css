@@ -57,3 +57,11 @@
 .login-user .lost-password{
     text-align: center;
 }
+#paswordtrength{
+    margin: 10px 0;
+}
+#paswordtrength .alert{
+    padding: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
