@@ -125,6 +125,13 @@ function chamilo_create_pages_user()
                 'option_key' => 'chamilo_user_account_page_id',
                 'template' => 'tpl_user_account.php'
             ),
+            'dashboard' => array(
+                'name' => esc_html_x('dashboard', 'Page slug', 'chamilo-connect'),
+                'title' => esc_html_x('User Dashboard', 'Page title', 'chamilo-connect'),
+                'content' => '[user_dashboard]',
+                'option_key' => 'chamilo_user_dashboard_page_id',
+                'template' => 'tpl_user_dashboard.php'
+            ),
             'mycourses' => array(
                 'name' => esc_html_x('my-courses', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('My Courses', 'Page title', 'chamilo-connect'),
@@ -179,7 +186,8 @@ function chamilo_add_template_to_select($post_templates, $wp_theme, $post, $post
         'tpl_user_my_certificates.php' => __('User Certificates'),
         'tpl_user_my_courses.php' => __('User Courses'),
         'tpl_user_register.php' => __('User Register'),
-        'tpl_user_lostpassword.php' => __('User Lost Password')
+        'tpl_user_lostpassword.php' => __('User Lost Password'),
+        'tpl_user_dashboard.php' => __('User Dashboard')
     ];
 }
 add_filter( 'theme_page_templates', 'chamilo_add_template_to_select', 10, 4 );
@@ -202,6 +210,13 @@ function chamilo_load_plugin_template($template) {
                 $template = $theme_file;
             } else {
                 $template = plugin_dir_path(__FILE__).'templates/tpl_user_register.php';
+            }
+            break;
+        case 'tpl_user_dashboard.php':
+            if ($theme_file = locate_template(array('tpl_user_dashboard.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_user_dashboard.php';
             }
             break;
         case 'tpl_user_account.php':
@@ -335,7 +350,8 @@ function chamilo_delete_pages()
         'my-certificates',
         'user-login',
         'user-register',
-        'user-lostpassword'
+        'user-lostpassword',
+        'dashboard'
     ];
     foreach ($slugs as $slug) {
         // Obtener el objeto de la página por su slug

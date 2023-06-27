@@ -3,11 +3,12 @@
  * Template Name: Template User Login
  */
 
-get_header();
-
 if(is_user_logged_in()){
     header( home_url()."/user-account");
+    exit;
 } else {
+
+$urlHome = home_url();
 $urlLogin = home_url().'/user-login';
 $urlLostPassword = home_url().'/user-lostpassword';
 include (plugin_dir_path( __FILE__ ) .'../countries/countries.php');
@@ -15,28 +16,29 @@ $countries = getCountries();
 
 // post form
 
-    if (isset($_POST['register-submit'])) {
-        $params =  [
-            'first_name' => $_POST['firstname'],
-            'last_name' => $_POST['lastname'],
-            'user_email' => $_POST['email'],
-            'user_login' => $_POST['email'],
-            'user_pass' => $_POST['password'],
-            'display_name' => $_POST['firstname'].', '.$_POST['lastname']
-        ];
+if (isset($_POST['register-submit'])) {
+    $params = [
+        'first_name' => $_POST['firstname'],
+        'last_name' => $_POST['lastname'],
+        'user_email' => $_POST['email'],
+        'user_login' => $_POST['email'],
+        'user_pass' => $_POST['password'],
+        'display_name' => $_POST['firstname'] . ', ' . $_POST['lastname']
+    ];
 
-        $user = wp_insert_user($params);
+    $user = wp_insert_user($params);
 
-        if (is_wp_error($user)) {
-            $error_message = $user->get_error_message();
-        } else {
-            add_user_meta($user,'country',$_POST['country']);
-            add_user_meta($user,'identifier',$_POST['identifier']);
-            add_user_meta($user,'rut',$_POST['rut']);
-            header( home_url()."/user-login");
-        }
+    if (is_wp_error($user)) {
+        $error_message = $user->get_error_message();
+    } else {
+        add_user_meta($user, 'country', $_POST['country']);
+        add_user_meta($user, 'identifier', $_POST['identifier']);
+        add_user_meta($user, 'rut', $_POST['rut']);
+        wp_redirect("/user-login");
+        exit;
     }
-
+}
+    get_header();
 ?>
     <div class="container">
         <section class="page-home page-register">
@@ -203,12 +205,9 @@ $countries = getCountries();
                     }
                 }
             });
-
         })(jQuery);
-
     </script>
 <?php
 }
     get_footer();
-
 ?>
