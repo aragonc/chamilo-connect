@@ -464,5 +464,11 @@ function chamilo_configuration_configuration_callback()
 
     <?php
 
+    function remove_admin_bar_for_subscribers() {
+        if (current_user_can('subscriber') && !is_admin()) {
+            show_admin_bar(false);
+        }
+    }
+    add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
 
 }

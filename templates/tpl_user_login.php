@@ -22,7 +22,20 @@ if (isset($_POST['login-submit'])) {
     }
 }
 
+$action = $_GET['action'] ?? null;
+//$wpnonce = $_GET['_wpnonce'] ?? null;
+
+if($action == 'logout'){
+    wp_logout();
+    //wp_redirect('user-login');
+    //exit;
+}
+if(is_user_logged_in()){
+    wp_redirect('dashboard');
+    exit;
+}
 get_header();
+
 
 ?>
 
@@ -45,7 +58,7 @@ get_header();
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="email">Correo electrónico (*)</label>
-                                    <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" required>
+                                    <input type="text" class="form-control" id="email" name="email" aria-describedby="emailHelp" required>
                                     <small id="emailHelp" class="form-text text-muted">
                                         Escribe el correo electrónico con el que te registraste en nuestra aula virtual, solo se aceptan minúsculas
                                     </small>
