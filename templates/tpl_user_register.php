@@ -13,7 +13,9 @@ $urlLogin = home_url().'/user-login';
 $urlLostPassword = home_url().'/user-lostpassword';
 include (plugin_dir_path( __FILE__ ) .'../countries/countries.php');
 $countries = getCountries();
-
+$chamilo = new ChamiloConnect();
+$error = new WP_Error();
+$error_message = null;
 // post form
 
 if (isset($_POST['register-submit'])) {
@@ -23,19 +25,33 @@ if (isset($_POST['register-submit'])) {
         'user_email' => $_POST['email'],
         'user_login' => $_POST['email'],
         'user_pass' => $_POST['password'],
-        'display_name' => $_POST['firstname'] . ', ' . $_POST['lastname']
+        'display_name' => $_POST['firstname'] . ', ' . $_POST['lastname'],
+        'country' => $_POST['country'],
+        'identifier' => $_POST['identifier'],
+        'rut' =>  $_POST['rut']
     ];
 
-    $user = wp_insert_user($params);
+    // comprobar en Chamilo
+    $apiKeyChamilo = $chamilo->authenticate();
 
-    if (is_wp_error($user)) {
-        $error_message = $user->get_error_message();
+    $userExists = $chamilo->getUserExists($params['user_login'], $apiKeyChamilo);
+
+    if($userExists){
+        $error_message = $error->get_error_message('existing_user_login');
     } else {
-        add_user_meta($user, 'country', $_POST['country']);
-        add_user_meta($user, 'identifier', $_POST['identifier']);
-        add_user_meta($user, 'rut', $_POST['rut']);
-        wp_redirect("/user-login");
-        exit;
+        $userWP = wp_insert_user($params);
+        $userChamilo = $chamilo->createUser($params,$apiKeyChamilo);
+
+        if (is_wp_error($userWP)) {
+            $error_message = $userWP->get_error_message();
+        } else {
+            add_user_meta($userWP, 'country', $_POST['country']);
+            add_user_meta($userWP, 'identifier', $_POST['identifier']);
+            add_user_meta($userWP, 'rut', $_POST['rut']);
+
+            wp_redirect("/user-login");
+            exit;
+        }
     }
 }
     get_header();
@@ -49,6 +65,11 @@ if (isset($_POST['register-submit'])) {
 
                 </div>
                 <div class="col-md-7">
+                    <?php if(!is_null($error_message)): ?>
+                    <div id="msg-error-rut" class="alert alert-danger">
+                        <?php echo $error_message; ?>
+                    </div>
+                    <?php endif; ?>
                     <div id="msg-error-rut" style="display: none;" class="alert alert-danger">
                         Debe de ingresar un RUT Válido
                     </div>
