@@ -139,10 +139,14 @@ class ChamiloConnect
      * @throws GuzzleException
      * @throws Exception
      */
-    public function authenticate() {
+    public function authenticate($username, $password)
+    {
         global $webserviceURL;
-        global $webserviceUsername;
-        global $webservicePassword;
+
+        if (empty($username) || empty($password)) {
+            return false;
+        }
+
         $client = new GuzzleClient([
             'base_uri' => $webserviceURL,
         ]);
@@ -150,8 +154,8 @@ class ChamiloConnect
         $response = $client->post('v2.php', [
             'form_params' => [
                 'action' => 'authenticate',
-                'username' => $webserviceUsername,
-                'password' => $webservicePassword,
+                'username' => $username,
+                'password' => $password,
             ],
         ]);
         if ($response->getStatusCode() !== 200) {
@@ -202,6 +206,46 @@ class ChamiloConnect
             throw new Exception('Can not make user_courses : '.$jsonResponse['message']);
         }
         return $jsonResponse['data'];
+    }
+
+    /**
+     * @param $username
+     * @param $apiKey
+     *
+     * @return int
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    function getSessions($username,$apiKey)
+    {
+        global $webserviceURL;
+
+        $client = new GuzzleClient([
+            'base_uri' => $webserviceURL,
+        ]);
+
+        $response = $client->post(
+            'v2.php',
+            [
+                'form_params' => [
+                    // data for the user who makes the request
+                    'action' => 'user_sessions',
+                    'username' => $username,
+                    'api_key' => $apiKey,
+                ],
+            ]
+        );
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception('Entry denied with code : ' . $response->getStatusCode());
+        }
+
+        $jsonResponse = json_decode($response->getBody()->getContents());
+
+        if ($jsonResponse->error) {
+            throw new Exception('Courses not added because : ' . $jsonResponse->message);
+        }
+        return $jsonResponse->data;
     }
 
 }

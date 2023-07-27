@@ -78,7 +78,7 @@ function resource_css() {
     wp_enqueue_style( 'chamilo_css',
         $urlPlugin.'css/style.css',
         array(),
-        '1.0'
+        '1.1'
     );
     wp_enqueue_style( 'strength_css',
         $urlPlugin.'js/strength/strength.css',
@@ -463,12 +463,100 @@ function chamilo_configuration_configuration_callback()
     </div>
 
     <?php
+}
 
-    function remove_admin_bar_for_subscribers() {
-        if (current_user_can('subscriber') && !is_admin()) {
-            show_admin_bar(false);
-        }
+function remove_admin_bar_for_subscribers() {
+    if (current_user_can('subscriber') && !is_admin()) {
+        show_admin_bar(false);
     }
-    add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
+}
+add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
+
+function get_user_login_bar(){
+    $urlSite = get_bloginfo('url');
+    $plugin_url = plugin_dir_url(__FILE__);
+    $logout_url = wp_logout_url(home_url());
+
+    ?>
+
+    <?php if (is_user_logged_in()):?>
+
+    <ul class="navbar ml-auto user-login">
+            <!-- Nav Item - Alerts -->
+            <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-bell fa-fw"></i>
+                    <!-- Counter - Alerts -->
+                    <span class="badge badge-danger badge-counter">3+</span>
+                </a>
+                <!-- Dropdown - Alerts -->
+                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
+                    <h6 class="dropdown-header">
+                        Alerts Center
+                    </h6>
+                    <a class="dropdown-item d-flex align-items-center" href="#">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-primary">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">December 12, 2019</div>
+                            <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                        </div>
+                    </a>
+
+                    <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                </div>
+            </li>
+
+            <!-- Nav Item - User Information -->
+            <li class="nav-item dropdown no-arrow mr-auto">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <img class="img-profile rounded-circle" src="<?php echo $plugin_url; ?>images/profile.svg">
+                </a>
+                <!-- Dropdown - User Information -->
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Mi perfil
+                    </a>
+
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Mis cursos
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="<?php echo $logout_url; ?>" >
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Cerrar sesión
+                    </a>
+                </div>
+            </li>
+
+        </ul>
+
+    <?php else: ?>
+    <div class="header-bar-login">
+            <ul class="btn-list no-list">
+                <li class="btn-list-item">
+                    <a href="<?php echo $urlSite; ?>/user-login" class="btn-cta btn-login">
+                        Ingresar
+                    </a>
+                </li>
+                <li class="btn-list-item">
+                    <a href="<?php echo $urlSite; ?>/user-register" class="btn-cta btn-register">
+                        Registrarse
+                    </a>
+                </li>
+            </ul>
+    </div>
+    <?php endif; ?>
+
+
+
+<?php
 
 }
+
+add_shortcode('login_bar', 'get_user_login_bar');

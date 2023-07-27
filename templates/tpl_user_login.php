@@ -12,12 +12,17 @@ if (isset($_POST['login-submit'])) {
         'user_password' => $_POST['password'],
         'remember' => true
     ];
-    $userLogin = wp_signon($params);
-    if (!is_wp_error($userLogin)) {
+
+    $chamilo = new ChamiloConnect();
+    $auth = $chamilo->authenticate($params['user_login'],$params['user_password']);
+    $userWP = wp_signon($params);
+    add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+
+    if (!is_wp_error($userWP)) {
         wp_redirect('/dashboard');
         exit;
     } else {
-        $error_message = $userLogin->get_error_message();
+        $error_message = $userWP->get_error_message();
         $msgError = 'Error de inicio de sesión: ' . $error_message;
     }
 }
