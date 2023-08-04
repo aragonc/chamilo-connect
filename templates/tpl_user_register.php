@@ -63,116 +63,142 @@ if (is_user_logged_in()) {
     }
 
     ?>
+
+    <section class="ftco-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center mb-5">
+                    <?php $chamilo->get_custom_logo_url(); ?>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <div class="wrap d-md-flex">
+                        <div class="img-form">
+                            <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/register.svg'; ?>" alt="" class="img-fluid">
+                        </div>
+                        <div class="login-wrap p-4 p-md-5">
+                            <h2 class="title">Registro de usuario</h2>
+                            <?php if (!is_null($error_message)): ?>
+                                <div id="msg-error-rut" class="alert alert-danger">
+                                    <?php echo $error_message; ?>
+                                </div>
+                            <?php endif; ?>
+                            <div id="msg-error-rut" style="display: none;" class="alert alert-danger">
+                                Debe de ingresar un RUT Válido
+                            </div>
+                            <form method="post" action="" id="register-user" class="register-user">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="alert alert-info text-register">
+                                            Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a>
+                                            ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="firstname">Nombres (*)</label>
+                                            <input type="text" class="form-control" name="firstname" id="firstname" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="lastname">Apellidos (*)</label>
+                                            <input type="text" class="form-control" name="lastname" id="lastname" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="email">Correo electrónico (*)</label>
+                                            <input type="email" class="form-control" id="email" name="email"
+                                                   aria-describedby="emailHelp" required>
+                                            <small id="emailHelp" class="form-text text-muted">
+                                                Este será tu usuario de acceso para ingresar a nuestra aula virtual, solo se
+                                                aceptan minúsculas
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="password">Contraseña</label>
+                                            <input type="password" class="form-control" id="password" name="password"
+                                                   aria-describedby="passwordHelp" required>
+                                            <div id="paswordtrength"></div>
+                                            <small id="passwordHelp" class="form-text text-muted">
+                                                Establece la contraseña que utilizarás para acceder a nuestra aula virtual, usar
+                                                entre mayúsculas,minúsculas,caracteres especiales, sin espacios
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="country">Pais</label>
+                                            <select name="country" class="form-control" id="country" required>
+                                                <?php foreach ($countries as $country):
+                                                    $selected = '';
+                                                    if (strtoupper($country['alpha2']) == 'CL') {
+                                                        $selected = 'selected';
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div id="input_dni" class="form-group" style="display:none;">
+                                            <label for="identifier">Nº Documento o Cédula de Identidad (*)</label>
+                                            <input type="text" name="identifier" class="form-control" id="identifier">
+                                            <small id="identifier_help" class="form-text text-muted">
+                                                Escribe tu DNI o Documento de identidad
+                                            </small>
+                                        </div>
+                                        <div id="input_rut" class="form-group">
+                                            <label for="rut">RUT Identificador Nacional (*)</label>
+                                            <input type="text" name="rut" class="form-control" id="rut"
+                                                   placeholder="Ej: 11222333-K">
+                                            <small id="rut_hep" class="form-text text-muted">
+                                                Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="help">
+                                    * Esta información la utilizaremos para tu certificado de aprobación.
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" id="register-submit" name="register-submit" value="register-submit"
+                                            class="btn btn-primary btn-block">Registrarme
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="container">
         <section class="page-home page-register">
 
-            <h2 class="title">Registro de usuario</h2>
+
             <div class="row">
                 <div class="col-md-5">
 
                 </div>
                 <div class="col-md-7">
-                    <?php if (!is_null($error_message)): ?>
-                        <div id="msg-error-rut" class="alert alert-danger">
-                            <?php echo $error_message; ?>
-                        </div>
-                    <?php endif; ?>
-                    <div id="msg-error-rut" style="display: none;" class="alert alert-danger">
-                        Debe de ingresar un RUT Válido
-                    </div>
-                    <form method="post" action="" id="register-user" class="register-user">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="alert alert-info text-register">
-                                    Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a>
-                                    ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="firstname">Nombres (*)</label>
-                                    <input type="text" class="form-control" name="firstname" id="firstname" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="lastname">Apellidos (*)</label>
-                                    <input type="text" class="form-control" name="lastname" id="lastname" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="email">Correo electrónico (*)</label>
-                                    <input type="email" class="form-control" id="email" name="email"
-                                           aria-describedby="emailHelp" required>
-                                    <small id="emailHelp" class="form-text text-muted">
-                                        Este será tu usuario de acceso para ingresar a nuestra aula virtual, solo se
-                                        aceptan minúsculas
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password">Contraseña</label>
-                                    <input type="password" class="form-control" id="password" name="password"
-                                           aria-describedby="passwordHelp" required>
-                                    <div id="paswordtrength"></div>
-                                    <small id="passwordHelp" class="form-text text-muted">
-                                        Establece la contraseña que utilizarás para acceder a nuestra aula virtual, usar
-                                        entre mayúsculas,minúsculas,caracteres especiales, sin espacios
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="country">Pais</label>
-                                    <select name="country" class="form-control" id="country" required>
-                                        <?php foreach ($countries as $country):
-                                            $selected = '';
-                                            if (strtoupper($country['alpha2']) == 'CL') {
-                                                $selected = 'selected';
-                                            }
-                                            ?>
-                                            <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div id="input_dni" class="form-group" style="display:none;">
-                                    <label for="identifier">Nº Documento o Cédula de Identidad (*)</label>
-                                    <input type="text" name="identifier" class="form-control" id="identifier">
-                                    <small id="identifier_help" class="form-text text-muted">
-                                        Escribe tu DNI o Documento de identidad
-                                    </small>
-                                </div>
-                                <div id="input_rut" class="form-group">
-                                    <label for="rut">RUT Identificador Nacional (*)</label>
-                                    <input type="text" name="rut" class="form-control" id="rut"
-                                           placeholder="Ej: 11222333-K">
-                                    <small id="rut_hep" class="form-text text-muted">
-                                        Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="help">
-                            * Esta información la utilizaremos para tu certificado de aprobación.
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" id="register-submit" name="register-submit" value="register-submit"
-                                    class="btn btn-primary btn-block">Registrarme
-                            </button>
-                        </div>
-                    </form>
+
+
+
                 </div>
             </div>
         </section>

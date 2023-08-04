@@ -64,7 +64,7 @@ if ($hideHeaderFooter) {
             <div class="row justify-content-center">
                 <div class="col-md-12 col-lg-10">
                     <div class="wrap d-md-flex">
-                        <div class="img-form">
+                        <div class="img-form pl-5 pr-5">
                             <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/login.svg'; ?>" alt="" class="img-fluid">
                         </div>
                         <div class="login-wrap p-4 p-md-5">
