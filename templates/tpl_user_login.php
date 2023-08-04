@@ -2,21 +2,25 @@
 /*
  * Template Name: Template User Login
  */
-$urlRegister = home_url().'/user-register';
-$urlLostPassword = home_url().'/user-lostpassword';
+$urlRegister = home_url() . '/user-register';
+$urlLostPassword = home_url() . '/user-lostpassword';
 $msgError = null;
+$chamilo = new ChamiloConnect();
 
 if (isset($_POST['login-submit'])) {
-    $params =  [
+    $params = [
         'user_login' => $_POST['email'],
         'user_password' => $_POST['password'],
         'remember' => true
     ];
-
-    $chamilo = new ChamiloConnect();
-    $auth = $chamilo->authenticate($params['user_login'],$params['user_password']);
-    $userWP = wp_signon($params);
-    add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+    //verify if you are admin in WordPress and not registered in Chamilo LMS
+    if ($chamilo->is_user_admin_by_username($params['user_login'])) {
+        $userWP = wp_signon($params);
+    } else {
+        $auth = $chamilo->authenticate($params['user_login'], $params['user_password']);
+        $userWP = wp_signon($params);
+        add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+    }
 
     if (!is_wp_error($userWP)) {
         wp_redirect('/dashboard');
@@ -30,17 +34,23 @@ if (isset($_POST['login-submit'])) {
 $action = $_GET['action'] ?? null;
 //$wpnonce = $_GET['_wpnonce'] ?? null;
 
-if($action == 'logout'){
+if ($action == 'logout') {
     wp_logout();
     //wp_redirect('user-login');
     //exit;
 }
-if(is_user_logged_in()){
+if (is_user_logged_in()) {
     wp_redirect('dashboard');
     exit;
 }
-get_header();
 
+//hide header
+$hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+if ($hideHeaderFooter) {
+    $chamilo->get_header_custom();
+} else {
+    get_header();
+}
 
 ?>
 
@@ -53,19 +63,21 @@ get_header();
 
                 </div>
                 <div class="col-md-7">
-                    <?php if($msgError): ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $msgError; ?>
-                    </div>
+                    <?php if ($msgError): ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php echo $msgError; ?>
+                        </div>
                     <?php endif; ?>
                     <form method="post" action="" id="login-user" class="login-user">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="email">Correo electrónico (*)</label>
-                                    <input type="text" class="form-control" id="email" name="email" aria-describedby="emailHelp" required>
+                                    <input type="text" class="form-control" id="email" name="email"
+                                           aria-describedby="emailHelp" required>
                                     <small id="emailHelp" class="form-text text-muted">
-                                        Escribe el correo electrónico con el que te registraste en nuestra aula virtual, solo se aceptan minúsculas
+                                        Escribe el correo electrónico con el que te registraste en nuestra aula virtual,
+                                        solo se aceptan minúsculas
                                     </small>
                                 </div>
                             </div>
@@ -74,7 +86,8 @@ get_header();
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="password">Contraseña</label>
-                                    <input type="password" class="form-control" id="password" name="password" aria-describedby="passwordHelp" required>
+                                    <input type="password" class="form-control" id="password" name="password"
+                                           aria-describedby="passwordHelp" required>
                                     <small id="passwordHelp" class="form-text text-muted">
                                         Escribe tu contraseña correctamente.
                                     </small>
@@ -83,7 +96,9 @@ get_header();
                         </div>
 
                         <div class="form-group">
-                            <button type="submit" value="submit" id="login-submit" name="login-submit" class="btn btn-primary btn-block">Iniciar sesión</button>
+                            <button type="submit" value="submit" id="login-submit" name="login-submit"
+                                    class="btn btn-primary btn-block">Iniciar sesión
+                            </button>
                             <a href="<?php echo $urlRegister; ?>" class="btn btn-default btn-block">
                                 Registro
                             </a>
@@ -101,4 +116,13 @@ get_header();
         </section>
     </div>
 
-<?php get_footer(); ?>
+<?php
+
+//hide footer
+if ($hideHeaderFooter) {
+    $chamilo->get_footer_custom();
+} else {
+    get_footer();
+}
+
+?>

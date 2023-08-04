@@ -70,6 +70,22 @@ class ChamiloConnect
 
     }
 
+    function get_header_custom() {
+        ob_start();
+        wp_head();
+        $header_content = ob_get_clean();
+        $header_content = preg_replace('/<head(.*)<\/head>/s', '', $header_content);
+        echo $header_content;
+    }
+
+    function get_footer_custom() {
+        ob_start();
+        wp_footer();
+        $footer_content = ob_get_clean();
+        $footer_content = preg_replace('/<footer(.*)<\/footer>/s', '', $footer_content);
+        echo $footer_content;
+    }
+
     /**
      * @throws GuzzleException
      * @throws Exception
@@ -212,11 +228,11 @@ class ChamiloConnect
      * @param $username
      * @param $apiKey
      *
-     * @return int
+     * @return string
      * @throws GuzzleException
      * @throws Exception
      */
-    function getSessions($username,$apiKey)
+    function getSessions($username,$apiKey): string
     {
         global $webserviceURL;
 
@@ -248,4 +264,27 @@ class ChamiloConnect
         return $jsonResponse->data;
     }
 
+    function is_user_admin_by_username($username): bool
+    {
+        global $wpdb;
+
+        // Obtenemos el ID del usuario usando el nombre de usuario
+        $user = get_user_by('login', $username);
+        $user_id = $user ? $user->ID : 0;
+
+        if ($user_id) {
+            // Obtenemos los roles del usuario
+            $user_roles = $wpdb->get_results($wpdb->prepare("SELECT meta_value FROM $wpdb->usermeta WHERE user_id = %d AND meta_key = %s", $user_id, $wpdb->prefix . 'capabilities'));
+
+            if ($user_roles) {
+                $capabilities = maybe_unserialize($user_roles[0]->meta_value);
+                // Comprobamos si el usuario tiene el rol de administrador
+                if (isset($capabilities['administrator']) && $capabilities['administrator'] === true) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

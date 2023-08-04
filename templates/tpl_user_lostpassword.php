@@ -3,9 +3,18 @@
  * Template Name: Template User Login
  */
 
-get_header();
+$chamilo = new ChamiloConnect();
 $urlLogin = home_url().'/user-login';
 $urlRegister = home_url().'/user-register';
+
+//hide header
+$hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+if ($hideHeaderFooter) {
+    $chamilo->get_header_custom();
+} else {
+    get_header();
+}
+
 
 ?>
     <div class="container">
@@ -49,4 +58,12 @@ $urlRegister = home_url().'/user-register';
         </section>
     </div>
 
-<?php get_footer(); ?>
+<?php
+//hide footer
+if ($hideHeaderFooter) {
+    $chamilo->get_footer_custom();
+} else {
+    get_footer();
+}
+
+?>

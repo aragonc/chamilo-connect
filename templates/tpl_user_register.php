@@ -3,59 +3,66 @@
  * Template Name: Template User Login
  */
 
-if(is_user_logged_in()){
-    header( home_url()."/user-account");
+if (is_user_logged_in()) {
+    header(home_url() . "/user-account");
     exit;
 } else {
 
-$urlHome = home_url();
-$urlLogin = home_url().'/user-login';
-$urlLostPassword = home_url().'/user-lostpassword';
-include (plugin_dir_path( __FILE__ ) .'../countries/countries.php');
-$countries = getCountries();
-$chamilo = new ChamiloConnect();
-$error = new WP_Error();
-$error_message = null;
+    $urlHome = home_url();
+    $urlLogin = home_url() . '/user-login';
+    $urlLostPassword = home_url() . '/user-lostpassword';
+    include(plugin_dir_path(__FILE__) . '../countries/countries.php');
+    $countries = getCountries();
+    $chamilo = new ChamiloConnect();
+    $error = new WP_Error();
+    $error_message = null;
 // post form
 
-if (isset($_POST['register-submit'])) {
-    $params = [
-        'first_name' => $_POST['firstname'],
-        'last_name' => $_POST['lastname'],
-        'user_email' => $_POST['email'],
-        'user_login' => $_POST['email'],
-        'user_pass' => $_POST['password'],
-        'display_name' => $_POST['firstname'] . ', ' . $_POST['lastname'],
-        'country' => $_POST['country'],
-        'identifier' => $_POST['identifier'],
-        'rut' =>  $_POST['rut']
-    ];
+    if (isset($_POST['register-submit'])) {
+        $params = [
+            'first_name' => $_POST['firstname'],
+            'last_name' => $_POST['lastname'],
+            'user_email' => $_POST['email'],
+            'user_login' => $_POST['email'],
+            'user_pass' => $_POST['password'],
+            'display_name' => $_POST['firstname'] . ', ' . $_POST['lastname'],
+            'country' => $_POST['country'],
+            'identifier' => $_POST['identifier'],
+            'rut' => $_POST['rut']
+        ];
 
-    // comprobar en Chamilo
-    $apiKeyChamilo = $chamilo->authenticate();
+        // comprobar en Chamilo
+        $apiKeyChamilo = $chamilo->authenticate();
 
-    $userExists = $chamilo->getUserExists($params['user_login'], $apiKeyChamilo);
+        $userExists = $chamilo->getUserExists($params['user_login'], $apiKeyChamilo);
 
-    if($userExists){
-        $error_message = $error->get_error_message('existing_user_login');
-    } else {
-        $userWP = wp_insert_user($params);
-        $userChamilo = $chamilo->createUser($params,$apiKeyChamilo);
-
-        if (is_wp_error($userWP)) {
-            $error_message = $userWP->get_error_message();
+        if ($userExists) {
+            $error_message = $error->get_error_message('existing_user_login');
         } else {
-            add_user_meta($userWP, 'country', $_POST['country']);
-            add_user_meta($userWP, 'identifier', $_POST['identifier']);
-            add_user_meta($userWP, 'rut', $_POST['rut']);
+            $userWP = wp_insert_user($params);
+            $userChamilo = $chamilo->createUser($params, $apiKeyChamilo);
 
-            wp_redirect("/user-login");
-            exit;
+            if (is_wp_error($userWP)) {
+                $error_message = $userWP->get_error_message();
+            } else {
+                add_user_meta($userWP, 'country', $_POST['country']);
+                add_user_meta($userWP, 'identifier', $_POST['identifier']);
+                add_user_meta($userWP, 'rut', $_POST['rut']);
+
+                wp_redirect("/user-login");
+                exit;
+            }
         }
     }
-}
-    get_header();
-?>
+    //hide header
+    $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+    if ($hideHeaderFooter) {
+        $chamilo->get_header_custom();
+    } else {
+        get_header();
+    }
+
+    ?>
     <div class="container">
         <section class="page-home page-register">
 
@@ -65,10 +72,10 @@ if (isset($_POST['register-submit'])) {
 
                 </div>
                 <div class="col-md-7">
-                    <?php if(!is_null($error_message)): ?>
-                    <div id="msg-error-rut" class="alert alert-danger">
-                        <?php echo $error_message; ?>
-                    </div>
+                    <?php if (!is_null($error_message)): ?>
+                        <div id="msg-error-rut" class="alert alert-danger">
+                            <?php echo $error_message; ?>
+                        </div>
                     <?php endif; ?>
                     <div id="msg-error-rut" style="display: none;" class="alert alert-danger">
                         Debe de ingresar un RUT Válido
@@ -77,7 +84,8 @@ if (isset($_POST['register-submit'])) {
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="alert alert-info text-register">
-                                    Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a> ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
+                                    Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a>
+                                    ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
                                 </div>
                             </div>
                         </div>
@@ -99,9 +107,11 @@ if (isset($_POST['register-submit'])) {
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="email">Correo electrónico (*)</label>
-                                    <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" required>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           aria-describedby="emailHelp" required>
                                     <small id="emailHelp" class="form-text text-muted">
-                                        Este será tu usuario de acceso para ingresar a nuestra aula virtual, solo se aceptan minúsculas
+                                        Este será tu usuario de acceso para ingresar a nuestra aula virtual, solo se
+                                        aceptan minúsculas
                                     </small>
                                 </div>
                             </div>
@@ -110,10 +120,12 @@ if (isset($_POST['register-submit'])) {
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="password">Contraseña</label>
-                                    <input type="password" class="form-control" id="password" name="password" aria-describedby="passwordHelp" required>
+                                    <input type="password" class="form-control" id="password" name="password"
+                                           aria-describedby="passwordHelp" required>
                                     <div id="paswordtrength"></div>
                                     <small id="passwordHelp" class="form-text text-muted">
-                                        Establece la contraseña que utilizarás para acceder a nuestra aula virtual, usar entre mayúsculas,minúsculas,caracteres especiales, sin espacios
+                                        Establece la contraseña que utilizarás para acceder a nuestra aula virtual, usar
+                                        entre mayúsculas,minúsculas,caracteres especiales, sin espacios
                                     </small>
                                 </div>
                             </div>
@@ -125,11 +137,11 @@ if (isset($_POST['register-submit'])) {
                                     <select name="country" class="form-control" id="country" required>
                                         <?php foreach ($countries as $country):
                                             $selected = '';
-                                            if(strtoupper($country['alpha2']) == 'CL') {
+                                            if (strtoupper($country['alpha2']) == 'CL') {
                                                 $selected = 'selected';
                                             }
-                                        ?>
-                                        <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
+                                            ?>
+                                            <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
@@ -144,7 +156,8 @@ if (isset($_POST['register-submit'])) {
                                 </div>
                                 <div id="input_rut" class="form-group">
                                     <label for="rut">RUT Identificador Nacional (*)</label>
-                                    <input type="text" name="rut" class="form-control" id="rut" placeholder="Ej: 11222333-K">
+                                    <input type="text" name="rut" class="form-control" id="rut"
+                                           placeholder="Ej: 11222333-K">
                                     <small id="rut_hep" class="form-text text-muted">
                                         Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K
                                     </small>
@@ -155,7 +168,9 @@ if (isset($_POST['register-submit'])) {
                             * Esta información la utilizaremos para tu certificado de aprobación.
                         </div>
                         <div class="form-group">
-                            <button type="submit" id="register-submit" name="register-submit" value="register-submit" class="btn btn-primary btn-block">Registrarme</button>
+                            <button type="submit" id="register-submit" name="register-submit" value="register-submit"
+                                    class="btn btn-primary btn-block">Registrarme
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -163,12 +178,12 @@ if (isset($_POST['register-submit'])) {
         </section>
     </div>
     <script>
-        (function($){
+        (function ($) {
             let rut = $("#rut");
             let dni = $("#dni");
             let checkRut = true;
 
-            $('#password').keyup(function(e) {
+            $('#password').keyup(function (e) {
                 let html = '';
                 let strongRegex = new RegExp("^(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$", "g");
                 let mediumRegex = new RegExp("^(?=.{7,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$", "g");
@@ -191,12 +206,12 @@ if (isset($_POST['register-submit'])) {
 
             $("#country").change(function () {
                 let countrySelect;
-                rut.attr('title','Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K');
-                rut.attr('maxlength','10');
-                $( "#country option:selected" ).each(function() {
+                rut.attr('title', 'Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K');
+                rut.attr('maxlength', '10');
+                $("#country option:selected").each(function () {
                     countrySelect = $(this).val();
                     //console.log(countrySelect);
-                    if(countrySelect == 'CL'){
+                    if (countrySelect == 'CL') {
                         $("#input_dni").hide();
                         $("#input_rut").show();
                         rut.val('');
@@ -208,17 +223,17 @@ if (isset($_POST['register-submit'])) {
                 });
             });
 
-            $("#register-user").submit(function(e){
+            $("#register-user").submit(function (e) {
                 //console.log(RUT.val());
                 let RutValue = rut.val();
                 let countrySelect;
                 //alert($("input[type=radio]:checked").val());
-                $( "#country option:selected" ).each(function() {
+                $("#country option:selected").each(function () {
                     countrySelect = $(this).val();
                 });
                 console.log(countrySelect);
-                if(checkRut){
-                    if(countrySelect === 'CL') {
+                if (checkRut) {
+                    if (countrySelect === 'CL') {
                         if (!(RutValue.match('^[0-9]{7,9}[-|‐]{1}[0-9kK]{1}$'))) {
                             $("#msg-error-rut").show();
                             e.preventDefault();
@@ -228,7 +243,12 @@ if (isset($_POST['register-submit'])) {
             });
         })(jQuery);
     </script>
-<?php
+    <?php
 }
+//hide footer
+if ($hideHeaderFooter) {
+    $chamilo->get_footer_custom();
+} else {
     get_footer();
+}
 ?>

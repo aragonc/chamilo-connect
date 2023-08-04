@@ -374,24 +374,25 @@ function chamilo_configuration_configuration_callback()
     $apiKeyChamilo = get_option('chamilo_connect_apikey');
     $userAdminChamilo = get_option('chamilo_connect_username');
     $passAdminChamilo = get_option('chamilo_connect_password');
+    $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
 
     if (isset($_POST['save'])) {
         $urlChamilo = $_POST['url_chamilo'];
         $apiKeyChamilo = $_POST['apikey_chamilo'];
-
         $userAdminChamilo = $_POST['username_chamilo'];
         $passAdminChamilo = $_POST['password_chamilo'];
+        $hideHeaderFooter = isset($_POST['hide_header_footer']) ? 1 : 0;
 
         update_option('chamilo_connect_url', $urlChamilo);
         update_option('chamilo_connect_apikey', $apiKeyChamilo);
         update_option('chamilo_connect_username', $userAdminChamilo);
         update_option('chamilo_connect_password', $passAdminChamilo);
+        update_option('chamilo_connect_hide_header_footer', $hideHeaderFooter);
     }
     $rps = false;
     if ( isset( $_POST['test'] ) ) {
         $chamilo = new ChamiloConnect();
         $rps = $chamilo->connectStatus();
-
     }
     ?>
 
@@ -450,18 +451,45 @@ function chamilo_configuration_configuration_callback()
                         </td>
                     </tr>
 
+                    <tr>
+                        <th scope="row">
+                            Ocultar el header y footer
+                        </th>
+                        <td>
+                            <label for="hide_header_footer">
+                                <input type="checkbox" name="hide_header_footer" id="hide_header_footer" <?php checked( $hideHeaderFooter, true ); ?> value="<?php echo $hideHeaderFooter; ?>">
+                                Permite ocultar la cabecera y el pie de pagina de las paginas de inicio de sesión, registro y contraseña olvidada.
+                            </label>
+                        </td>
+                    </tr>
+
                     </tbody>
                 </table>
                 <div class="submit">
                     <?php
-                    submit_button('Guardar datos de conexión', 'primary', 'save', false);
+                    submit_button('Guardar configuración', 'primary', 'save', false);
                     submit_button('Probar la conexión', 'success', 'test', false);
                     ?>
                 </div>
             </form>
         </div>
     </div>
+    <script>
+        jQuery(document).ready(function($) {
+            // Capturar el evento clic en el checkbox
+            $('#hide_header_footer').on('click', function() {
+                // Obtener el valor actual del checkbox
+                var currentValue = $(this).val();
 
+                // Cambiar el valor del checkbox
+                if (currentValue === '1') {
+                    $(this).val('0');
+                } else {
+                    $(this).val('1');
+                }
+            });
+        });
+    </script>
     <?php
 }
 
