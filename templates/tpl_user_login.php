@@ -54,67 +54,75 @@ if ($hideHeaderFooter) {
 
 ?>
 
-    <div class="container">
-        <section class="page-home page-register">
-
-            <h2 class="title">Acceso al Aula Virtual</h2>
-            <div class="row">
-                <div class="col-md-5">
-
-                </div>
-                <div class="col-md-7">
-                    <?php if ($msgError): ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php echo $msgError; ?>
-                        </div>
-                    <?php endif; ?>
-                    <form method="post" action="" id="login-user" class="login-user">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="email">Correo electrónico (*)</label>
-                                    <input type="text" class="form-control" id="email" name="email"
-                                           aria-describedby="emailHelp" required>
-                                    <small id="emailHelp" class="form-text text-muted">
-                                        Escribe el correo electrónico con el que te registraste en nuestra aula virtual,
-                                        solo se aceptan minúsculas
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password">Contraseña</label>
-                                    <input type="password" class="form-control" id="password" name="password"
-                                           aria-describedby="passwordHelp" required>
-                                    <small id="passwordHelp" class="form-text text-muted">
-                                        Escribe tu contraseña correctamente.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <button type="submit" value="submit" id="login-submit" name="login-submit"
-                                    class="btn btn-primary btn-block">Iniciar sesión
-                            </button>
-                            <a href="<?php echo $urlRegister; ?>" class="btn btn-default btn-block">
-                                Registro
-                            </a>
-                        </div>
-
-                        <div class="lost-password">
-                            <a href="<?php echo $urlLostPassword; ?>">
-                                ¿Ha olvidado su contraseña?
-                            </a>
-                        </div>
-
-                    </form>
+    <section class="ftco-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center mb-5">
+                    <?php $chamilo->get_custom_logo_url(); ?>
                 </div>
             </div>
-        </section>
-    </div>
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <div class="wrap d-md-flex">
+                        <div class="img-form">
+                            <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/login.svg'; ?>" alt="" class="img-fluid">
+                        </div>
+                        <div class="login-wrap p-4 p-md-5">
+                            <h2 class="title">Acceso al Aula Virtual</h2>
+                            <?php if ($msgError): ?>
+                                <div class="alert alert-danger" role="alert">
+                                    <?php echo $msgError; ?>
+                                </div>
+                            <?php endif; ?>
+                            <form method="post" action="" id="login-user" class="login-user">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="email">Correo electrónico (*)</label>
+                                            <input type="text" class="form-control" id="email" name="email"
+                                                   aria-describedby="emailHelp" required>
+                                            <small id="emailHelp" class="form-text text-muted">
+                                                Escribe el correo electrónico con el que te registraste en nuestra aula virtual,
+                                                solo se aceptan minúsculas
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="password">Contraseña</label>
+                                            <input type="password" class="form-control" id="password" name="password"
+                                                   aria-describedby="passwordHelp" required>
+                                            <small id="passwordHelp" class="form-text text-muted">
+                                                Escribe tu contraseña correctamente.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" value="submit" id="login-submit" name="login-submit"
+                                            class="btn btn-primary btn-block">Iniciar sesión
+                                    </button>
+                                    <a href="<?php echo $urlRegister; ?>" class="btn btn-default btn-block">
+                                        Registro
+                                    </a>
+                                </div>
+
+                                <div class="lost-password">
+                                    <a href="<?php echo $urlLostPassword; ?>">
+                                        ¿Ha olvidado su contraseña?
+                                    </a>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 <?php
 

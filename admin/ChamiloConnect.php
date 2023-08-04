@@ -70,6 +70,12 @@ class ChamiloConnect
 
     }
 
+    function get_url_plugin_chamilo(): string
+    {
+        $plugin_folder_name = 'chamilo-connect';
+        return plugins_url($plugin_folder_name);
+    }
+
     function get_header_custom() {
         ob_start();
         wp_head();
@@ -84,6 +90,19 @@ class ChamiloConnect
         $footer_content = ob_get_clean();
         $footer_content = preg_replace('/<footer(.*)<\/footer>/s', '', $footer_content);
         echo $footer_content;
+    }
+
+    function get_custom_logo_url($size = 'medium') {
+        $custom_logo_id = get_theme_mod('custom_logo'); // Obtiene el ID de la imagen del logotipo personalizado
+        if ($custom_logo_id) {
+            $custom_logo_url = wp_get_attachment_image_src($custom_logo_id, $size);
+            if ($custom_logo_url) {
+                $logo_url = $custom_logo_url[0];
+                echo '<img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'">';
+            }
+        } else {
+            echo '<h1>' . get_bloginfo('name') . '</h1>';
+        }
     }
 
     /**
