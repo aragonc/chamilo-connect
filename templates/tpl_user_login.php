@@ -6,6 +6,7 @@ $urlRegister = home_url() . '/user-register';
 $urlLostPassword = home_url() . '/user-lostpassword';
 $msgError = null;
 $chamilo = new ChamiloConnect();
+$userExistsWP = false;
 
 if (isset($_POST['login-submit'])) {
     $params = [
@@ -17,9 +18,24 @@ if (isset($_POST['login-submit'])) {
     if ($chamilo->is_user_admin_by_username($params['user_login'])) {
         $userWP = wp_signon($params);
     } else {
+        // Verificamos si el usuario existe en Chamilo LMS a travès de su key
         $auth = $chamilo->authenticate($params['user_login'], $params['user_password']);
-        $userWP = wp_signon($params);
-        add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+        if(!empty($auth)){
+            var_dump($auth);
+            // Verificamos si ahora ese usuario existe dentro de Wordpress
+            $userExistsWP = $chamilo->user_exists_by_email_wp($params['user_login']);
+            if($userExistsWP){
+                $userWP = wp_signon($params);
+                add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+            } else {
+                var_dump($userExistsWP);
+            }
+
+        }
+
+
+        exit;
+
     }
 
     if (!is_wp_error($userWP)) {

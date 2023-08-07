@@ -3,7 +3,7 @@
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 
-$webserviceURL= get_option('chamilo_connect_url').'/main/webservices/api/';
+$webserviceURL= get_option('chamilo_connect_url').'/plugin/apichamilo/';
 $webserviceUsername = get_option('chamilo_connect_username');
 $webservicePassword = get_option('chamilo_connect_password');
 
@@ -14,6 +14,54 @@ class ChamiloConnect
     {
         require_once plugin_dir_path(__FILE__) .'../vendor/autoload.php';
     }
+
+    function get_url_plugin_chamilo(): string
+    {
+        $plugin_folder_name = 'chamilo-connect';
+        return plugins_url($plugin_folder_name);
+    }
+
+    function get_header_custom() {
+        ob_start();
+        wp_head();
+        $header_content = ob_get_clean();
+        $header_content = preg_replace('/<head(.*)<\/head>/s', '', $header_content);
+        echo $header_content;
+    }
+
+    function get_footer_custom() {
+        ob_start();
+        wp_footer();
+        $footer_content = ob_get_clean();
+        $footer_content = preg_replace('/<footer(.*)<\/footer>/s', '', $footer_content);
+        echo $footer_content;
+    }
+
+    function get_custom_logo_url($size = 'medium') {
+        $custom_logo_id = get_theme_mod('custom_logo'); // Obtiene el ID de la imagen del logotipo personalizado
+        if ($custom_logo_id) {
+            $custom_logo_url = wp_get_attachment_image_src($custom_logo_id, $size);
+            if ($custom_logo_url) {
+                $logo_url = $custom_logo_url[0];
+                echo '<img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'">';
+            }
+        } else {
+            echo '<h1>' . get_bloginfo('name') . '</h1>';
+        }
+    }
+
+    function user_exists_by_email_wp($email): bool
+    {
+        $user = get_user_by('email', $email);
+        // Check if the user exists
+        if ($user) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /* FUNCTIONS API REST CHAMILO */
 
     /**
      * @throws GuzzleException
@@ -68,41 +116,6 @@ class ChamiloConnect
 
         return $jsonResponse->data[0];
 
-    }
-
-    function get_url_plugin_chamilo(): string
-    {
-        $plugin_folder_name = 'chamilo-connect';
-        return plugins_url($plugin_folder_name);
-    }
-
-    function get_header_custom() {
-        ob_start();
-        wp_head();
-        $header_content = ob_get_clean();
-        $header_content = preg_replace('/<head(.*)<\/head>/s', '', $header_content);
-        echo $header_content;
-    }
-
-    function get_footer_custom() {
-        ob_start();
-        wp_footer();
-        $footer_content = ob_get_clean();
-        $footer_content = preg_replace('/<footer(.*)<\/footer>/s', '', $footer_content);
-        echo $footer_content;
-    }
-
-    function get_custom_logo_url($size = 'medium') {
-        $custom_logo_id = get_theme_mod('custom_logo'); // Obtiene el ID de la imagen del logotipo personalizado
-        if ($custom_logo_id) {
-            $custom_logo_url = wp_get_attachment_image_src($custom_logo_id, $size);
-            if ($custom_logo_url) {
-                $logo_url = $custom_logo_url[0];
-                echo '<img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'">';
-            }
-        } else {
-            echo '<h1>' . get_bloginfo('name') . '</h1>';
-        }
     }
 
     /**
@@ -174,7 +187,7 @@ class ChamiloConnect
      * @throws GuzzleException
      * @throws Exception
      */
-    public function authenticate($username, $password)
+    public function authenticate($username, $password): string
     {
         global $webserviceURL;
 
@@ -247,11 +260,11 @@ class ChamiloConnect
      * @param $username
      * @param $apiKey
      *
-     * @return string
+     * @return array
      * @throws GuzzleException
      * @throws Exception
      */
-    function getSessions($username,$apiKey): string
+    function getSessions($username,$apiKey)
     {
         global $webserviceURL;
 
