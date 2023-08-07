@@ -501,9 +501,20 @@ function remove_admin_bar_for_subscribers() {
 add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
 
 function get_user_login_bar(){
+    $chamilo = new ChamiloConnect();
     $urlSite = get_bloginfo('url');
     $plugin_url = plugin_dir_url(__FILE__);
     $logout_url = wp_logout_url(home_url());
+
+    $current_user = wp_get_current_user();
+    $userID = $current_user->ID;
+    $username = $current_user->user_login;
+    $apiKeyChamilo = get_user_meta($userID,'api_key_chamilo', true);
+    $profile = $chamilo->getUserProfile($username, $apiKeyChamilo);
+    $avatar =  $plugin_url.'images/profile.svg';
+    if(!empty($profile)){
+        $avatar = $profile['pictureUri'];
+    }
 
     ?>
 
@@ -541,7 +552,9 @@ function get_user_login_bar(){
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow mr-auto">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="img-profile rounded-circle" src="<?php echo $plugin_url; ?>images/profile.svg">
+
+                    <img class="img-profile rounded-circle" src="<?php echo $avatar; ?>">
+
                 </a>
                 <!-- Dropdown - User Information -->
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">

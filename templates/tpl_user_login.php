@@ -33,7 +33,7 @@ if (isset($_POST['login-submit'])) {
                 //add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
                 $profile = $chamilo->getUserProfile($params['user_login'], $auth);
 
-                $params = [
+                $userParams = [
                     'first_name' => $profile['first_name'],
                     'last_name' => $profile['last_name'],
                     'user_email' => $profile['email'],
@@ -42,7 +42,9 @@ if (isset($_POST['login-submit'])) {
                     'display_name' => $profile['full_name'],
                     'country' => $profile['country'],
                 ];
-                $userWP = wp_insert_user($params);
+                $userID = wp_insert_user($userParams);
+                add_user_meta($userID, 'api_key_chamilo', $auth);
+                $userWP = wp_signon($params);
             }
         }
     }
