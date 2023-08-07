@@ -7,6 +7,7 @@ $urlLostPassword = home_url() . '/user-lostpassword';
 $msgError = null;
 $chamilo = new ChamiloConnect();
 $userExistsWP = false;
+$userWP = [];
 
 if (isset($_POST['login-submit'])) {
     $params = [
@@ -20,22 +21,30 @@ if (isset($_POST['login-submit'])) {
     } else {
         // Verificamos si el usuario existe en Chamilo LMS a travès de su key
         $auth = $chamilo->authenticate($params['user_login'], $params['user_password']);
-        if(!empty($auth)){
-            var_dump($auth);
+        //var_dump($auth);
+        if (!empty($auth)) {
+            //var_dump($auth);
             // Verificamos si ahora ese usuario existe dentro de Wordpress
             $userExistsWP = $chamilo->user_exists_by_email_wp($params['user_login']);
-            if($userExistsWP){
+            if ($userExistsWP) {
                 $userWP = wp_signon($params);
-                add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+                update_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
             } else {
-                var_dump($userExistsWP);
+                //add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
+                $profile = $chamilo->getUserProfile($params['user_login'], $auth);
+
+                $params = [
+                    'first_name' => $profile['first_name'],
+                    'last_name' => $profile['last_name'],
+                    'user_email' => $profile['email'],
+                    'user_login' => $profile['username'],
+                    'user_pass' => $params['user_password'],
+                    'display_name' => $profile['full_name'],
+                    'country' => $profile['country'],
+                ];
+                $userWP = wp_insert_user($params);
             }
-
         }
-
-
-        exit;
-
     }
 
     if (!is_wp_error($userWP)) {
@@ -81,7 +90,8 @@ if ($hideHeaderFooter) {
                 <div class="col-md-12 col-lg-10">
                     <div class="wrap d-md-flex">
                         <div class="img-form pl-5 pr-5">
-                            <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/login.svg'; ?>" alt="" class="img-fluid">
+                            <img src="<?php echo $chamilo->get_url_plugin_chamilo() . '/images/login.svg'; ?>" alt=""
+                                 class="img-fluid">
                         </div>
                         <div class="login-wrap p-4 p-md-5">
                             <h2 class="title">Acceso al Aula Virtual</h2>
@@ -98,7 +108,8 @@ if ($hideHeaderFooter) {
                                             <input type="text" class="form-control" id="email" name="email"
                                                    aria-describedby="emailHelp" required>
                                             <small id="emailHelp" class="form-text text-muted">
-                                                Escribe el correo electrónico con el que te registraste en nuestra aula virtual,
+                                                Escribe el correo electrónico con el que te registraste en nuestra aula
+                                                virtual,
                                                 solo se aceptan minúsculas
                                             </small>
                                         </div>

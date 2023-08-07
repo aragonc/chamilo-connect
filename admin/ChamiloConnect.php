@@ -296,6 +296,46 @@ class ChamiloConnect
         return $jsonResponse->data;
     }
 
+    /**
+     * @param $apiKey
+     *
+     * @return int
+     * @throws Exception|GuzzleException
+     *
+     */
+    function getUserProfile($username, $apiKey)
+    {
+        global $webserviceURL;
+        $client = new GuzzleClient([
+            'base_uri' => $webserviceURL,
+        ]);
+
+        $response = $client->post(
+            'v2.php',
+            [
+                'form_params' => [
+                    // data for the user who makes the request
+                    'action' => 'user_profile',
+                    'username' => $username,
+                    'api_key' => $apiKey,
+                ],
+            ]
+        );
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception('Entry denied with code : '.$response->getStatusCode());
+        }
+
+        $content = $response->getBody()->getContents();
+        $jsonResponse = json_decode($content, true);
+
+        if ($jsonResponse['error']) {
+            throw new Exception('cant get user profile because : '.$jsonResponse['message']);
+        }
+        return $jsonResponse['data'];
+    }
+
+
     function is_user_admin_by_username($username): bool
     {
         global $wpdb;
@@ -319,4 +359,5 @@ class ChamiloConnect
 
         return false;
     }
+
 }
