@@ -18,21 +18,23 @@ if (isset($_POST['login-submit'])) {
     //verify if you are admin in WordPress and not registered in Chamilo LMS
     if ($chamilo->is_user_admin_by_username($params['user_login'])) {
         $userWP = wp_signon($params);
+        wp_redirect('/dashboard');
+        exit;
     } else {
+
         // Verificamos si el usuario existe en Chamilo LMS a travès de su key
         $auth = $chamilo->authenticate($params['user_login'], $params['user_password']);
-        //var_dump($auth);
+
         if (!empty($auth)) {
-            //var_dump($auth);
+
             // Verificamos si ahora ese usuario existe dentro de Wordpress
             $userExistsWP = $chamilo->user_exists_by_email_wp($params['user_login']);
+
             if ($userExistsWP) {
                 $userWP = wp_signon($params);
                 update_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
             } else {
-                //add_user_meta($userWP->data->ID, 'api_key_chamilo', $auth);
                 $profile = $chamilo->getUserProfile($params['user_login'], $auth);
-
                 $userParams = [
                     'first_name' => $profile['first_name'],
                     'last_name' => $profile['last_name'],
@@ -46,15 +48,15 @@ if (isset($_POST['login-submit'])) {
                 add_user_meta($userID, 'api_key_chamilo', $auth);
                 $userWP = wp_signon($params);
             }
+            wp_redirect('/dashboard');
+            if (is_wp_error($userWP)) {
+                $error_message = $userWP->get_error_message();
+                $msgError = 'Error de inicio de sesión: ' . $error_message;
+            }
+            exit;
+        } else {
+            $msgError = 'Usuario o contraseña incorrectos. Por favor, intenta nuevamente.';
         }
-    }
-
-    if (!is_wp_error($userWP)) {
-        wp_redirect('/dashboard');
-        exit;
-    } else {
-        $error_message = $userWP->get_error_message();
-        $msgError = 'Error de inicio de sesión: ' . $error_message;
     }
 }
 
@@ -63,8 +65,6 @@ $action = $_GET['action'] ?? null;
 
 if ($action == 'logout') {
     wp_logout();
-    //wp_redirect('user-login');
-    //exit;
 }
 if (is_user_logged_in()) {
     wp_redirect('dashboard');

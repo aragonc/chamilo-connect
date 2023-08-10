@@ -508,9 +508,12 @@ function get_user_login_bar(){
 
     $current_user = wp_get_current_user();
     $userID = $current_user->ID;
-    $username = $current_user->user_login;
-    $apiKeyChamilo = get_user_meta($userID,'api_key_chamilo', true);
-    $profile = $chamilo->getUserProfile($username, $apiKeyChamilo);
+    if($userID != 0){
+        $username = $current_user->user_login;
+        $apiKeyChamilo = get_user_meta($userID,'api_key_chamilo', true);
+        $profile = $chamilo->getUserProfile($username, $apiKeyChamilo);
+    }
+
     $avatar =  $plugin_url.'images/profile.svg';
     if(!empty($profile)){
         $avatar = $profile['pictureUri'];

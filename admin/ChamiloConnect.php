@@ -214,7 +214,8 @@ class ChamiloConnect
 
         if ($jsonResponse->error)
         {
-            throw new Exception('Authentication failed because : ' . $jsonResponse->message);
+            return false;
+            //throw new Exception('Authentication failed because : ' . $jsonResponse->message);
         }
 
         return $jsonResponse->data->apiKey;
@@ -264,7 +265,7 @@ class ChamiloConnect
      * @throws GuzzleException
      * @throws Exception
      */
-    function getSessions($username,$apiKey)
+    function getSessions($username,$apiKey): array
     {
         global $webserviceURL;
 
