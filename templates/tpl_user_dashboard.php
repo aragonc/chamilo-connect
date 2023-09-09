@@ -8,13 +8,11 @@ get_header();
 $current_user = wp_get_current_user();
 $userID = $current_user->ID;
 $username = $current_user->user_login;
-
 $row = [];
 if($current_user->roles[0] != 'administrator'){
     $apiKeyChamilo = get_user_meta($userID,'api_key_chamilo', true);
-    var_dump($apiKeyChamilo);
-    $chamilo = new ChamiloConnect();
-    $row = $chamilo->getSessions($username,$apiKeyChamilo);
+    //$chamilo = new ChamiloConnect();
+    //$row = $chamilo->getSessions($username,$apiKeyChamilo);
 }
 
 ?>

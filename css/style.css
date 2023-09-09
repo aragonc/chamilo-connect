@@ -63,8 +63,14 @@
 }
 #paswordtrength .alert{
     padding: 5px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
+}
+#email-status.alert{
+    padding: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 10px 0;
 }
 .header-bar-login{
     display: flex;

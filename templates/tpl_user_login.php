@@ -15,11 +15,19 @@ if (isset($_POST['login-submit'])) {
         'user_password' => $_POST['password'],
         'remember' => true
     ];
+
     //verify if you are admin in WordPress and not registered in Chamilo LMS
-    if ($chamilo->is_user_admin_by_username($params['user_login'])) {
+    if ($chamilo->is_user_admin_by_username_wp($params['user_login'])) {
         $userWP = wp_signon($params);
-        wp_redirect('/dashboard');
-        exit;
+        if (is_wp_error($userWP)) {
+            $error_message = $userWP->get_error_message();
+            $msgError = $error_message;
+
+        } else {
+            wp_redirect('/dashboard');
+            exit;
+        }
+        //exit;
     } else {
 
         // Verificamos si el usuario existe en Chamilo LMS a travès de su key
@@ -48,11 +56,11 @@ if (isset($_POST['login-submit'])) {
                 add_user_meta($userID, 'api_key_chamilo', $auth);
                 $userWP = wp_signon($params);
             }
-            wp_redirect('/dashboard');
             if (is_wp_error($userWP)) {
                 $error_message = $userWP->get_error_message();
                 $msgError = 'Error de inicio de sesión: ' . $error_message;
             }
+            wp_redirect('/dashboard');
             exit;
         } else {
             $msgError = 'Usuario o contraseña incorrectos. Por favor, intenta nuevamente.';

@@ -118,43 +118,6 @@ class ChamiloConnect
 
     }
 
-    /**
-     * @throws GuzzleException
-     * @throws Exception
-     */
-    public function getUserExists($username, $apiKeyChamilo){
-        global $webserviceURL;
-        global $webserviceUsername;
-        if(empty($username)){
-            return false;
-        }
-
-        $client = new GuzzleClient([
-            'base_uri' => $webserviceURL,
-        ]);
-
-        $response = $client->post('v2.php', [
-            'form_params' => [
-                'action' => 'username_exist',
-                'username' => $webserviceUsername,
-                'api_key' => $apiKeyChamilo,
-                'loginname' => $username
-            ],
-        ]);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new Exception('Entry denied with code : ' . $response->getStatusCode());
-        }
-
-        $content = $response->getBody()->getContents();
-        $jsonResponse = json_decode($content, true);
-
-        if ($jsonResponse['error']) {
-            throw new Exception('cant get user profile because : '.$jsonResponse['message']);
-        }
-        return $jsonResponse['data'][0];
-
-    }
 
     /**
      * @throws GuzzleException
@@ -182,6 +145,47 @@ class ChamiloConnect
 
         return $rsp;
     }
+
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public function getUserNameExist($apiKey, $loginName)
+    {
+        global $webserviceURL;
+        global $webserviceUsername;
+        $client = new GuzzleClient([
+            'base_uri' => $webserviceURL,
+
+        ]);
+
+
+        $response = $client->post(
+            'v2.php',
+            [
+                'form_params' => [
+                    // data for the user who makes the request
+                    'action' => 'username_exist',
+                    'username' => $webserviceUsername,
+                    'api_key' => $apiKey,
+                    'loginname' => $loginName,
+                ],
+            ]
+        );
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception('Entry denied with code : '.$response->getStatusCode());
+        }
+
+        $content = $response->getBody()->getContents();
+        $jsonResponse = json_decode($content, true);
+
+        if ($jsonResponse['error']) {
+            throw new Exception('cant get user profile because : '.$jsonResponse['message']);
+        }
+        return $jsonResponse['data'][0];
+    }
+
 
     /**
      * @throws GuzzleException
@@ -337,7 +341,7 @@ class ChamiloConnect
     }
 
 
-    function is_user_admin_by_username($username): bool
+    function is_user_admin_by_username_wp($username): bool
     {
         global $wpdb;
 

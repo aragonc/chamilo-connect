@@ -7,7 +7,6 @@ if (is_user_logged_in()) {
     header(home_url() . "/user-account");
     exit;
 } else {
-
     $urlHome = home_url();
     $urlLogin = home_url() . '/user-login';
     $urlLostPassword = home_url() . '/user-lostpassword';
@@ -16,7 +15,8 @@ if (is_user_logged_in()) {
     $chamilo = new ChamiloConnect();
     $error = new WP_Error();
     $error_message = null;
-// post form
+    $webserviceUsername = get_option('chamilo_connect_username');
+    $webservicePassword = get_option('chamilo_connect_password');
 
     if (isset($_POST['register-submit'])) {
         $params = [
@@ -34,11 +34,6 @@ if (is_user_logged_in()) {
         // comprobar en Chamilo
         $apiKeyChamilo = $chamilo->authenticate();
 
-        $userExists = $chamilo->getUserExists($params['user_login'], $apiKeyChamilo);
-
-        if ($userExists) {
-            $error_message = $error->get_error_message('existing_user_login');
-        } else {
             $userWP = wp_insert_user($params);
             $userChamilo = $chamilo->createUser($params, $apiKeyChamilo);
 
@@ -48,11 +43,10 @@ if (is_user_logged_in()) {
                 add_user_meta($userWP, 'country', $_POST['country']);
                 add_user_meta($userWP, 'identifier', $_POST['identifier']);
                 add_user_meta($userWP, 'rut', $_POST['rut']);
-
                 wp_redirect("/user-login");
                 exit;
             }
-        }
+
     }
     //hide header
     $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
@@ -61,7 +55,6 @@ if (is_user_logged_in()) {
     } else {
         get_header();
     }
-
     ?>
 
     <section class="ftco-section">
@@ -90,10 +83,17 @@ if (is_user_logged_in()) {
                             <form method="post" action="" id="register-user" class="register-user">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="alert alert-info text-register">
-                                            Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a>
-                                            ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
-                                        </div>
+                                        <button type="button" class="w-full flex justify-center items-center cursor-pointer text-center " id="customGoogleButton" style="border: 1px solid rgba(0, 153, 255, 0.3); display: flex;">
+                                            <div class="mr-4">
+                                                <svg version="1.1" x="0px" y="0px" viewBox="0 0 512 512" width="22" height="22" enable-background="new 0 0 512 512">
+                                                    <path d="M113.47,309.408L95.648,375.94l-65.139,1.378C11.042,341.211,0,299.9,0,256 c0-42.451,10.324-82.483,28.624-117.732h0.014l57.992,10.632l25.404,57.644c-5.317,15.501-8.215,32.141-8.215,49.456 C103.821,274.792,107.225,292.797,113.47,309.408z" style="fill: rgb(251, 187, 0);"></path>
+                                                    <path d="M507.527,208.176C510.467,223.662,512,239.655,512,256c0,18.328-1.927,36.206-5.598,53.451 c-12.462,58.683-45.025,109.925-90.134,146.187l-0.014-0.014l-73.044-3.727l-10.338-64.535 c29.932-17.554,53.324-45.025,65.646-77.911h-136.89V208.176h138.887L507.527,208.176L507.527,208.176z" style="fill: rgb(81, 142, 248);"></path>
+                                                    <path d="M416.253,455.624l0.014,0.014C372.396,490.901,316.666,512,256,512 c-97.491,0-182.252-54.491-225.491-134.681l82.961-67.91c21.619,57.698,77.278,98.771,142.53,98.771 c28.047,0,54.323-7.582,76.87-20.818L416.253,455.624z" style="fill: rgb(40, 180, 70);"></path>
+                                                    <path d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012 c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0 C318.115,0,375.068,22.126,419.404,58.936z" style="fill: rgb(241, 67, 54);"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="font-bold">Regístrate con Google</span>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -111,28 +111,27 @@ if (is_user_logged_in()) {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="email">Correo electrónico (*)</label>
                                             <input type="email" class="form-control" id="email" name="email"
                                                    aria-describedby="emailHelp" required>
+                                            <div id="email-status" class="alert alert-danger" role="alert" style="display: none;">
+                                            </div>
                                             <small id="emailHelp" class="form-text text-muted">
-                                                Este será tu usuario de acceso para ingresar a nuestra aula virtual, solo se
-                                                aceptan minúsculas
+                                                Este será tu usuario de acceso para ingresar, solo se aceptan minúsculas
                                             </small>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="password">Contraseña</label>
                                             <input type="password" class="form-control" id="password" name="password"
                                                    aria-describedby="passwordHelp" required>
                                             <div id="paswordtrength"></div>
                                             <small id="passwordHelp" class="form-text text-muted">
-                                                Establece la contraseña que utilizarás para acceder a nuestra aula virtual, usar
-                                                entre mayúsculas,minúsculas,caracteres especiales, sin espacios
+                                                Establece la contraseña que utilizarás para acceder
+                                                (mayúsculas,minúsculas,caracteres especiales, sin espacios)
                                             </small>
                                         </div>
                                     </div>
@@ -176,10 +175,16 @@ if (is_user_logged_in()) {
                                 </div>
                                 <div class="form-group">
                                     <button type="submit" id="register-submit" name="register-submit" value="register-submit"
-                                            class="btn btn-primary btn-block">Registrarme
+                                            class="btn btn-primary btn-block" disabled>Registrarme
                                     </button>
                                 </div>
                             </form>
+                            <div>
+                                <div class="alert alert-info text-register">
+                                    Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a>
+                                    ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,22 +192,6 @@ if (is_user_logged_in()) {
         </div>
     </section>
 
-    <div class="container">
-        <section class="page-home page-register">
-
-
-            <div class="row">
-                <div class="col-md-5">
-
-                </div>
-                <div class="col-md-7">
-
-
-
-                </div>
-            </div>
-        </section>
-    </div>
     <script>
         (function ($) {
             let rut = $("#rut");
@@ -267,6 +256,64 @@ if (is_user_logged_in()) {
                     }
                 }
             });
+
+            //Ajax email user exist.
+            $(document).ready(function() {
+                let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/user.ajax.php'; ?>";
+                // Referencia al campo de entrada de correo electrónico
+                let emailInput = $("#email");
+
+                // Referencia al elemento donde se mostrará el resultado de la verificación
+                let emailStatus = $("#email-status");
+
+                // Función para verificar el correo electrónico usando Ajax
+                function checkEmailAvailability(email) {
+                    $.ajax({
+                        url: urlAjax,
+                        method: "GET",
+                        data: { email: email },
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log(response);
+                            let resultValue = response.result;
+                            console.log(resultValue);
+                            if(!resultValue){
+                                emailStatus.removeClass('alert alert-danger');
+                                emailStatus.addClass('alert alert-success');
+                                emailStatus.show();
+                                emailStatus.text('El email se encuentra libre');
+                            } else {
+                                emailStatus.removeClass('alert alert-success');
+                                emailStatus.addClass('alert alert-danger');
+                                emailStatus.show();
+                                emailStatus.text('El email ya se encuentra registrado');
+                            }
+                        }
+                    });
+                }
+
+                // Función para verificar el formato de correo electrónico
+                function isValidEmail(email) {
+                    let pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+                    return pattern.test(email);
+                }
+
+                emailInput.on("input", function() {
+                    let typedEmail = emailInput.val();
+                    emailStatus.text(""); // Limpia el estado
+
+                    if (isValidEmail(typedEmail)) {
+                        checkEmailAvailability(typedEmail);
+                        emailStatus.hide();
+                    } else {
+                        emailStatus.removeClass('alert alert-success');
+                        emailStatus.addClass('alert alert-danger');
+                        emailStatus.show();
+                        emailStatus.text("Correo electrónico inválido");
+                    }
+                });
+            });
+
         })(jQuery);
     </script>
     <?php
