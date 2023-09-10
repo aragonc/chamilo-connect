@@ -1,6 +1,6 @@
 <?php
 /*
- * Template Name: Template User Login
+ * Template Name: Template User Register
  */
 
 if (is_user_logged_in()) {
@@ -13,10 +13,9 @@ if (is_user_logged_in()) {
     include(plugin_dir_path(__FILE__) . '../countries/countries.php');
     $countries = getCountries();
     $chamilo = new ChamiloConnect();
-    $error = new WP_Error();
     $error_message = null;
-    $webserviceUsername = get_option('chamilo_connect_username');
-    $webservicePassword = get_option('chamilo_connect_password');
+    $userAdminChamilo = get_option('chamilo_connect_username');
+    $passAdminChamilo = get_option('chamilo_connect_password');
 
     if (isset($_POST['register-submit'])) {
         $params = [
@@ -32,29 +31,30 @@ if (is_user_logged_in()) {
         ];
 
         // comprobar en Chamilo
-        $apiKeyChamilo = $chamilo->authenticate();
+        $userWP = wp_insert_user($params);
+        $userChamilo = $chamilo->createUser($params);
 
-            $userWP = wp_insert_user($params);
-            $userChamilo = $chamilo->createUser($params, $apiKeyChamilo);
+        if (is_wp_error($userWP)) {
+            $error_message = $userWP->get_error_message();
+        } else {
+            add_user_meta($userWP, 'country', $_POST['country']);
+            add_user_meta($userWP, 'identifier', $_POST['identifier']);
+            add_user_meta($userWP, 'rut', $_POST['rut']);
 
-            if (is_wp_error($userWP)) {
-                $error_message = $userWP->get_error_message();
-            } else {
-                add_user_meta($userWP, 'country', $_POST['country']);
-                add_user_meta($userWP, 'identifier', $_POST['identifier']);
-                add_user_meta($userWP, 'rut', $_POST['rut']);
-                wp_redirect("/user-login");
-                exit;
-            }
+            wp_redirect("/user-login",);
+            exit;
+        }
 
-    }
-    //hide header
-    $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
-    if ($hideHeaderFooter) {
-        $chamilo->get_header_custom();
     } else {
-        get_header();
+        //hide header
+        $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+        if ($hideHeaderFooter) {
+            $chamilo->get_header_custom();
+        } else {
+            get_header();
+        }
     }
+
     ?>
 
     <section class="ftco-section">
@@ -282,6 +282,7 @@ if (is_user_logged_in()) {
                                 emailStatus.addClass('alert alert-success');
                                 emailStatus.show();
                                 emailStatus.text('El email se encuentra libre');
+                                $('#register-submit').prop('disabled', false);
                             } else {
                                 emailStatus.removeClass('alert alert-success');
                                 emailStatus.addClass('alert alert-danger');

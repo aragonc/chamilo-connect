@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\GuzzleException;
 $webserviceURL= get_option('chamilo_connect_url').'/plugin/apichamilo/';
 $webserviceUsername = get_option('chamilo_connect_username');
 $webservicePassword = get_option('chamilo_connect_password');
+$webserviceApiKey = get_option('chamilo_connect_apikey');
 
 class ChamiloConnect
 {
@@ -67,9 +68,11 @@ class ChamiloConnect
      * @throws GuzzleException
      * @throws Exception
      */
-    public function createUser($values, $apikey){
+    public function createUser($values)
+    {
         global $webserviceURL;
         global $webserviceUsername;
+        global $webserviceApiKey;
         $client = new GuzzleClient([
             'base_uri' => $webserviceURL,
         ]);
@@ -81,7 +84,7 @@ class ChamiloConnect
                     // data for the user who makes the request
                     'action' => 'save_user',
                     'username' => $webserviceUsername,
-                    'api_key' => $apikey,
+                    'api_key' => $webserviceApiKey,
                     // data for new user
                     'firstname' => $values['first_name'],
                     'lastname' => $values['last_name'],
@@ -94,9 +97,13 @@ class ChamiloConnect
                     'original_user_id_value' => '1234', // ID for the user in the external system
                     'extra' => [
                         [
-                            'identificador' => $values['identifier'],
-                            'rut_factura' => $values['rut'],
+                            'field_name' => 'identificador',
+                            'field_value' => $values['identifier'],
                         ],
+                        [
+                            'field_name' => 'rut_factura',
+                            'field_value' => $values['rut'],
+                        ]
                     ],
                     'language' => 'spanish',
                     //'phone' => '',
@@ -104,17 +111,18 @@ class ChamiloConnect
                 ],
             ]
         );
+
         if ($response->getStatusCode() !== 200) {
-            throw new Exception('Entry denied with code : ' . $response->getStatusCode());
+            throw new Exception('Entry denied with code : '.$response->getStatusCode());
         }
 
-        $jsonResponse = json_decode($response->getBody()->getContents());
+        $content = $response->getBody()->getContents();
+        $jsonResponse = json_decode($content, true);
 
-        if ($jsonResponse->error) {
-            throw new Exception('User not created because : ' . $jsonResponse->message);
+        if ($jsonResponse['error']) {
+            throw new Exception('cant get user profile because : '.$jsonResponse['message']);
         }
-
-        return $jsonResponse->data[0];
+        return $jsonResponse['data'][0];
 
     }
 
