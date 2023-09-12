@@ -82,21 +82,6 @@ if (is_user_logged_in()) {
                             </div>
                             <form method="post" action="" id="register-user" class="register-user">
                                 <div class="row">
-                                    <div class="col-md-12">
-                                        <button type="button" class="w-full flex justify-center items-center cursor-pointer text-center " id="customGoogleButton" style="border: 1px solid rgba(0, 153, 255, 0.3); display: flex;">
-                                            <div class="mr-4">
-                                                <svg version="1.1" x="0px" y="0px" viewBox="0 0 512 512" width="22" height="22" enable-background="new 0 0 512 512">
-                                                    <path d="M113.47,309.408L95.648,375.94l-65.139,1.378C11.042,341.211,0,299.9,0,256 c0-42.451,10.324-82.483,28.624-117.732h0.014l57.992,10.632l25.404,57.644c-5.317,15.501-8.215,32.141-8.215,49.456 C103.821,274.792,107.225,292.797,113.47,309.408z" style="fill: rgb(251, 187, 0);"></path>
-                                                    <path d="M507.527,208.176C510.467,223.662,512,239.655,512,256c0,18.328-1.927,36.206-5.598,53.451 c-12.462,58.683-45.025,109.925-90.134,146.187l-0.014-0.014l-73.044-3.727l-10.338-64.535 c29.932-17.554,53.324-45.025,65.646-77.911h-136.89V208.176h138.887L507.527,208.176L507.527,208.176z" style="fill: rgb(81, 142, 248);"></path>
-                                                    <path d="M416.253,455.624l0.014,0.014C372.396,490.901,316.666,512,256,512 c-97.491,0-182.252-54.491-225.491-134.681l82.961-67.91c21.619,57.698,77.278,98.771,142.53,98.771 c28.047,0,54.323-7.582,76.87-20.818L416.253,455.624z" style="fill: rgb(40, 180, 70);"></path>
-                                                    <path d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012 c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0 C318.115,0,375.068,22.126,419.404,58.936z" style="fill: rgb(241, 67, 54);"></path>
-                                                </svg>
-                                            </div>
-                                            <span class="font-bold">Regístrate con Google</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="firstname">Nombres (*)</label>
@@ -310,7 +295,7 @@ if (is_user_logged_in()) {
                         emailStatus.removeClass('alert alert-success');
                         emailStatus.addClass('alert alert-danger');
                         emailStatus.show();
-                        emailStatus.text("Correo electrónico inválido");
+                        emailStatus.text("Escribe correctamente un correo valido ejemplo: info@example.com");
                     }
                 });
             });

@@ -47,6 +47,8 @@ if ($hideHeaderFooter) {
                                         <div class="form-group">
                                             <label for="email">Correo electrónico (*)</label>
                                             <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                                            <div id="email-status" class="alert alert-danger" role="alert" style="display: none;">
+                                            </div>
                                             <small id="emailHelp" class="form-text text-muted">
                                                 Escriba el nombre de usuario o la dirección de correo electrónico con la que está registrado y le remitiremos su contraseña.
                                             </small>
@@ -66,7 +68,67 @@ if ($hideHeaderFooter) {
             </div>
         </div>
     </section>
+<script>
+    (function ($) {
+        //Ajax email user exist.
+        $(document).ready(function() {
+            let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/user.ajax.php'; ?>";
+            // Referencia al campo de entrada de correo electrónico
+            let emailInput = $("#email");
 
+            // Referencia al elemento donde se mostrará el resultado de la verificación
+            let emailStatus = $("#email-status");
+
+            // Función para verificar el correo electrónico usando Ajax
+            function checkEmailAvailability(email) {
+                $.ajax({
+                    url: urlAjax,
+                    method: "GET",
+                    data: { email: email },
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        let resultValue = response.result;
+                        console.log(resultValue);
+                        if(!resultValue){
+                            emailStatus.removeClass('alert alert-success');
+                            emailStatus.addClass('alert alert-danger');
+                            emailStatus.show();
+                            emailStatus.text('El correo ingresado no se encuentra registrado');
+                            $('#register-submit').prop('disabled', false);
+                        } else {
+                            emailStatus.removeClass('alert alert-danger');
+                            emailStatus.addClass('alert alert-success');
+                            emailStatus.show();
+                            emailStatus.text('El correo ingresado si existe');
+                        }
+                    }
+                });
+            }
+
+            // Función para verificar el formato de correo electrónico
+            function isValidEmail(email) {
+                let pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+                return pattern.test(email);
+            }
+
+            emailInput.on("input", function() {
+                let typedEmail = emailInput.val();
+                emailStatus.text(""); // Limpia el estado
+
+                if (isValidEmail(typedEmail)) {
+                    checkEmailAvailability(typedEmail);
+                    emailStatus.hide();
+                } else {
+                    emailStatus.removeClass('alert alert-success');
+                    emailStatus.addClass('alert alert-danger');
+                    emailStatus.show();
+                    emailStatus.text("Escribe correctamente un correo valido ejemplo: info@example.com");
+                }
+            });
+        });
+    })(jQuery);
+</script>
 <?php
 //hide footer
 if ($hideHeaderFooter) {
