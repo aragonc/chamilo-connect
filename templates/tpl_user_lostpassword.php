@@ -4,8 +4,8 @@
  */
 
 $chamilo = new ChamiloConnect();
-$urlLogin = home_url().'/user-login';
-$urlRegister = home_url().'/user-register';
+$urlLogin = home_url().'/login';
+$urlRegister = home_url().'/register';
 $token = $urlToken = null;
 
 if (isset($_POST['lost-submit'])) {

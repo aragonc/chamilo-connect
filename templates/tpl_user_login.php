@@ -2,8 +2,8 @@
 /*
  * Template Name: Template User Login
  */
-$urlRegister = home_url() . '/user-register';
-$urlLostPassword = home_url() . '/user-lostpassword';
+$urlRegister = home_url() . '/register';
+$urlLostPassword = home_url() . '/lost-password';
 $msgError = null;
 $chamilo = new ChamiloConnect();
 $userExistsWP = false;

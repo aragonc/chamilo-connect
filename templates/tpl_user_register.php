@@ -8,8 +8,8 @@ if (is_user_logged_in()) {
     exit;
 } else {
     $urlHome = home_url();
-    $urlLogin = home_url() . '/user-login';
-    $urlLostPassword = home_url() . '/user-lostpassword';
+    $urlLogin = home_url() . '/login';
+    $urlLostPassword = home_url() . '/lost-password';
     include(plugin_dir_path(__FILE__) . '../countries/countries.php');
     $countries = getCountries();
     $chamilo = new ChamiloConnect();
@@ -41,7 +41,7 @@ if (is_user_logged_in()) {
             add_user_meta($userWP, 'identifier', $_POST['identifier']);
             add_user_meta($userWP, 'rut', $_POST['rut']);
 
-            wp_redirect("/user-login",);
+            wp_redirect("/login",);
             exit;
         }
 
