@@ -20,12 +20,12 @@ function chamilo_activation()
 {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'chamilo_connect';
-    $table_recovery = $wpdb->prefix . 'chamilo_recovery_tokens';// Nombre de la tabla con prefijo de WordPress
+    $table_chamilo_connect = $wpdb->prefix . 'chamilo_connect';
+    $table_chamilo_recovery = $wpdb->prefix . 'chamilo_recovery_tokens';
 
     $charset_collate = $wpdb->get_charset_collate();
 
-    $sql = "CREATE TABLE $table_name (
+    $sql = "CREATE TABLE $table_chamilo_connect (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         meta_key varchar(255) NOT NULL,
         meta_value longtext NOT NULL,
@@ -33,7 +33,7 @@ function chamilo_activation()
     ) $charset_collate;";
 
     $sql.= "
-        CREATE TABLE $table_recovery (
+        CREATE TABLE $table_chamilo_recovery (
             id INT PRIMARY KEY AUTO_INCREMENT,
             user_email VARCHAR(100) NOT NULL DEFAULT '',
             token VARCHAR(255) NOT NULL,
@@ -49,7 +49,13 @@ function chamilo_activation()
 function chamilo_deactivation()
 {
     global $wpdb;
-    $sql = 'DROP TABLE ' . $wpdb->prefix . 'chamilo;';
+
+    $table_chamilo_connect = $wpdb->prefix . 'chamilo_connect';
+    $table_chamilo_recovery = $wpdb->prefix . 'chamilo_recovery_tokens';
+
+    $sql = 'DROP TABLE ' . $table_chamilo_connect . ';';
+    $wpdb->get_results($sql);
+    $sql = 'DROP TABLE ' . $table_chamilo_recovery . ';';
     $wpdb->get_results($sql);
     chamilo_delete_pages();
 
@@ -129,7 +135,7 @@ function chamilo_create_pages_user()
         'create_default_pages',
         array(
             'useraccount' => array(
-                'name' => esc_html_x('user-account', 'Page slug', 'chamilo-connect'),
+                'name' => esc_html_x('account', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('User Account', 'Page title', 'chamilo-connect'),
                 'content' => '[user_account]',
                 'option_key' => 'chamilo_user_account_page_id',
@@ -157,21 +163,21 @@ function chamilo_create_pages_user()
                 'template' => 'tpl_user_my_certificates.php'
             ),
             'login' => array(
-                'name' => esc_html_x('user-login', 'Page slug', 'chamilo-connect'),
+                'name' => esc_html_x('login', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('Login', 'Page title', 'chamilo-connect'),
                 'content' => '[user_login]',
                 'option_key' => 'chamilo_login_page_id',
                 'template' => 'tpl_user_login.php'
             ),
             'register' => array(
-                'name' => esc_html_x('user-register', 'Page slug', 'chamilo-connect'),
+                'name' => esc_html_x('register', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('Register', 'Page title', 'chamilo-connect'),
                 'content' => '[user_register]',
                 'option_key' => 'chamilo_register_page_id',
                 'template' => 'tpl_user_register.php'
             ),
             'lostpassword' => array(
-                'name' => esc_html_x('user-lostpassword', 'Page slug', 'chamilo-connect'),
+                'name' => esc_html_x('lost-password', 'Page slug', 'chamilo-connect'),
                 'title' => esc_html_x('Lost Password', 'Page title', 'chamilo-connect'),
                 'content' => '[user_lostpassword]',
                 'option_key' => 'chamilo_lostpassword_page_id',
@@ -370,12 +376,12 @@ if (!function_exists('wdm_chamilo_update_page_id')) {
 function chamilo_delete_pages()
 {
     $slugs = [
-        'user-account',
+        'account',
         'my-courses',
         'my-certificates',
-        'user-login',
-        'user-register',
-        'user-lostpassword',
+        'login',
+        'register',
+        'lost-password',
         'dashboard',
         'recover-password'
     ];
@@ -615,12 +621,12 @@ function get_user_login_bar(){
     <div class="header-bar-login">
             <ul class="btn-list no-list">
                 <li class="btn-list-item">
-                    <a href="<?php echo $urlSite; ?>/user-login" class="btn-cta btn-login">
+                    <a href="<?php echo $urlSite; ?>/login" class="btn-cta btn-login">
                         Ingresar
                     </a>
                 </li>
                 <li class="btn-list-item">
-                    <a href="<?php echo $urlSite; ?>/user-register" class="btn-cta btn-register">
+                    <a href="<?php echo $urlSite; ?>/register" class="btn-cta btn-register">
                         Registrarse
                     </a>
                 </li>
