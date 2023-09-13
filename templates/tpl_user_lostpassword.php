@@ -10,17 +10,21 @@ $token = $urlToken = null;
 
 if (isset($_POST['lost-submit'])) {
     $email = sanitize_email($_POST['email']);
+    $userInfo = $chamilo->getUserEmailProfile($email);
+    $logo = $chamilo->get_custom_logo_url('medium', false);
     try {
         $token = $chamilo->generate_token();
-        $urlToken = home_url().'/reset-password?token='.$token;
+        $urlToken = home_url().'/recover-password?token='.$token;
     } catch (Exception $e) {
         print_r($e);
     }
     $params = [
-            'name' => 'Alex Aragón',
-            'email' => $email,
-            'token' => $token,
-            'url_token' => $urlToken
+        'name' => $userInfo['firstname'],
+        'email' => $email,
+        'token' => $token,
+        'url_token' => $urlToken,
+        'avatar' => $userInfo['avatar'],
+        'logo' => $logo
     ];
     try {
         $sent = $chamilo->send_token_email($params);

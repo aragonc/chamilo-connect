@@ -177,6 +177,13 @@ function chamilo_create_pages_user()
                 'option_key' => 'chamilo_lostpassword_page_id',
                 'template' => 'tpl_user_lostpassword.php'
             ),
+            'recoverpassword' => array(
+                'name' => esc_html_x('recover-password', 'Page slug', 'chamilo-connect'),
+                'title' => esc_html_x('Recover Password', 'Page title', 'chamilo-connect'),
+                'content' => '[user_recover_password]',
+                'option_key' => 'chamilo_recoverpassword_page_id',
+                'template' => 'tpl_recover_password.php'
+            ),
         )
     );
     foreach ($pages as $page) {
@@ -197,7 +204,8 @@ function chamilo_add_template_to_select($post_templates, $wp_theme, $post, $post
         'tpl_user_my_courses.php' => __('User Courses'),
         'tpl_user_register.php' => __('User Register'),
         'tpl_user_lostpassword.php' => __('User Lost Password'),
-        'tpl_user_dashboard.php' => __('User Dashboard')
+        'tpl_user_dashboard.php' => __('User Dashboard'),
+        'tpl_recover_password.php' => __('Recover Password')
     ];
 }
 add_filter( 'theme_page_templates', 'chamilo_add_template_to_select', 10, 4 );
@@ -255,6 +263,13 @@ function chamilo_load_plugin_template($template) {
                 $template = $theme_file;
             } else {
                 $template = plugin_dir_path(__FILE__).'templates/tpl_user_lostpassword.php';
+            }
+            break;
+        case 'tpl_recover_password.php':
+            if ($theme_file = locate_template(array('tpl_recover_password.php'))) {
+                $template = $theme_file;
+            } else {
+                $template = plugin_dir_path(__FILE__).'templates/tpl_recover_password.php';
             }
             break;
         default:
@@ -361,7 +376,8 @@ function chamilo_delete_pages()
         'user-login',
         'user-register',
         'user-lostpassword',
-        'dashboard'
+        'dashboard',
+        'recover-password'
     ];
     foreach ($slugs as $slug) {
         // Obtener el objeto de la página por su slug

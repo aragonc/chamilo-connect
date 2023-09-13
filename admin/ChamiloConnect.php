@@ -43,17 +43,27 @@ class ChamiloConnect
         echo $footer_content;
     }
 
-    function get_custom_logo_url($size = 'medium') {
+    function get_custom_logo_url($size = 'medium', $print = true) {
         $blog_url = home_url();
         $custom_logo_id = get_theme_mod('custom_logo'); // Obtiene el ID de la imagen del logotipo personalizado
         if ($custom_logo_id) {
             $custom_logo_url = wp_get_attachment_image_src($custom_logo_id, $size);
             if ($custom_logo_url) {
                 $logo_url = $custom_logo_url[0];
-                echo '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
+                if($print){
+                    echo '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
+                } else {
+                    return '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
+                }
+
             }
         } else {
-            echo '<h1>' . get_bloginfo('name') . '</h1>';
+            if($print){
+                echo '<h1>' . get_bloginfo('name') . '</h1>';
+            } else {
+                return '<h1>' . get_bloginfo('name') . '</h1>';
+            }
+
         }
     }
 
@@ -350,11 +360,10 @@ class ChamiloConnect
     /**
      * @param $apiKey
      *
-     * @return int
      * @throws Exception|GuzzleException
      *
      */
-    function getUserProfile($username, $apiKey): int
+    function getUserProfile($username, $apiKey)
     {
         global $webserviceURL;
         $client = new GuzzleClient([
@@ -369,6 +378,49 @@ class ChamiloConnect
                     'action' => 'user_profile',
                     'username' => $username,
                     'api_key' => $apiKey,
+                ],
+            ]
+        );
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception('Entry denied with code : '.$response->getStatusCode());
+        }
+
+        $content = $response->getBody()->getContents();
+        $jsonResponse = json_decode($content, true);
+
+        if ($jsonResponse['error']) {
+            throw new Exception('cant get user profile because : '.$jsonResponse['message']);
+        }
+        return $jsonResponse['data'];
+    }
+
+
+    /**
+     * @param $email
+     *
+     * @throws Exception|GuzzleException
+     *
+     */
+    function getUserEmailProfile($email)
+    {
+        global $webserviceURL;
+        global $webserviceApiKey;
+        global $webserviceUsername;
+
+        $client = new GuzzleClient([
+            'base_uri' => $webserviceURL,
+        ]);
+
+        $response = $client->post(
+            'v2.php',
+            [
+                'form_params' => [
+                    // data for the user who makes the request
+                    'action' => 'get_user_email',
+                    'email' => $email,
+                    'api_key' => $webserviceApiKey,
+                    'username' => $webserviceUsername,
                 ],
             ]
         );
