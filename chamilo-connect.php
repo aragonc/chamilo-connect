@@ -20,7 +20,8 @@ function chamilo_activation()
 {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'chamilo_connect'; // Nombre de la tabla con prefijo de WordPress
+    $table_name = $wpdb->prefix . 'chamilo_connect';
+    $table_recovery = $wpdb->prefix . 'chamilo_recovery_tokens';// Nombre de la tabla con prefijo de WordPress
 
     $charset_collate = $wpdb->get_charset_collate();
 
@@ -30,6 +31,15 @@ function chamilo_activation()
         meta_value longtext NOT NULL,
         PRIMARY KEY (id)
     ) $charset_collate;";
+
+    $sql.= "
+        CREATE TABLE $table_recovery (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_email VARCHAR(100) NOT NULL DEFAULT '',
+            token VARCHAR(255) NOT NULL,
+            created_at DATETIME NOT NULL,
+            FOREIGN KEY (user_email) REFERENCES wp_users(user_email)
+        ) $charset_collate; ";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);

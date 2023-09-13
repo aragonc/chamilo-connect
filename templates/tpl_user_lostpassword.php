@@ -6,7 +6,33 @@
 $chamilo = new ChamiloConnect();
 $urlLogin = home_url().'/user-login';
 $urlRegister = home_url().'/user-register';
+$token = $urlToken = null;
 
+if (isset($_POST['lost-submit'])) {
+    $email = sanitize_email($_POST['email']);
+    try {
+        $token = $chamilo->generate_token();
+        $urlToken = home_url().'/reset-password?token='.$token;
+    } catch (Exception $e) {
+        print_r($e);
+    }
+    $params = [
+            'name' => 'Alex Aragón',
+            'email' => $email,
+            'token' => $token,
+            'url_token' => $urlToken
+    ];
+    try {
+        $sent = $chamilo->send_token_email($params);
+        if ($sent) {
+            echo 'Se ha enviado un correo con el token de recuperación.';
+        } else {
+            echo 'Hubo un problema al enviar el correo.';
+        }
+    } catch (Exception $e) {
+        print_r($e);
+    }
+}
 //hide header
 $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
 if ($hideHeaderFooter) {
@@ -33,20 +59,13 @@ if ($hideHeaderFooter) {
                         </div>
                         <div class="login-wrap p-4 p-md-5">
                             <h2 class="title">¿Ha olvidado su contraseña?</h2>
-                            <form method="post" action="" id="register-user" class="register-user">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="alert alert-info text-register">
-                                            Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a> ó
-                                            <a href="<?php echo $urlRegister; ?>"> Registrate </a>
-                                        </div>
-                                    </div>
-                                </div>
+                            <form method="post" action="" id="lost-password" class="lost-password">
+
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="email">Correo electrónico (*)</label>
-                                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                                            <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
                                             <div id="email-status" class="alert alert-danger" role="alert" style="display: none;">
                                             </div>
                                             <small id="emailHelp" class="form-text text-muted">
@@ -59,7 +78,17 @@ if ($hideHeaderFooter) {
                                     * Contenido obligatorio
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" value="submit" class="btn btn-primary btn-block">Recuperar contraseña</button>
+                                    <button id="lost-submit" name="lost-submit" value="lost-submit" type="submit" class="btn btn-primary btn-block" disabled>
+                                        Recuperar contraseña
+                                    </button>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="alert alert-info text-register">
+                                            Si ya tienes una cuenta, <a href="<?php echo $urlLogin; ?>">inicia sesión aquí </a> ó
+                                            <a href="<?php echo $urlRegister; ?>"> Registrate </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -87,20 +116,20 @@ if ($hideHeaderFooter) {
                     data: { email: email },
                     dataType: 'json',
                     success: function(response) {
-                        console.log(response);
+                        //console.log(response);
                         let resultValue = response.result;
-                        console.log(resultValue);
+                        //console.log(resultValue);
                         if(!resultValue){
                             emailStatus.removeClass('alert alert-success');
                             emailStatus.addClass('alert alert-danger');
                             emailStatus.show();
                             emailStatus.text('El correo ingresado no se encuentra registrado');
-                            $('#register-submit').prop('disabled', false);
                         } else {
                             emailStatus.removeClass('alert alert-danger');
                             emailStatus.addClass('alert alert-success');
                             emailStatus.show();
                             emailStatus.text('El correo ingresado si existe');
+                            $('#lost-submit').prop('disabled', false);
                         }
                     }
                 });

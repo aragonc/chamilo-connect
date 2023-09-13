@@ -22,6 +22,11 @@ class ChamiloConnect
         return plugins_url($plugin_folder_name);
     }
 
+    function get_path_plugin_chamilo(): string
+    {
+        return plugin_dir_path(__FILE__);
+    }
+
     function get_header_custom() {
         ob_start();
         wp_head();
@@ -39,12 +44,13 @@ class ChamiloConnect
     }
 
     function get_custom_logo_url($size = 'medium') {
+        $blog_url = home_url();
         $custom_logo_id = get_theme_mod('custom_logo'); // Obtiene el ID de la imagen del logotipo personalizado
         if ($custom_logo_id) {
             $custom_logo_url = wp_get_attachment_image_src($custom_logo_id, $size);
             if ($custom_logo_url) {
                 $logo_url = $custom_logo_url[0];
-                echo '<img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'">';
+                echo '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
             }
         } else {
             echo '<h1>' . get_bloginfo('name') . '</h1>';
@@ -60,6 +66,38 @@ class ChamiloConnect
         } else {
             return false;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    function generate_token(): string
+    {
+        return bin2hex(random_bytes(32));
+    }
+
+    /**
+     * @throws Exception
+     */
+    function send_token_email($params) {
+        $urlPath = self::get_path_plugin_chamilo();
+        $html_file = $urlPath . '../templates/tpl_email_token.html';
+        $email = $params['email'];
+        if (file_exists($html_file)) {
+            $html_content = file_get_contents($html_file);
+            // Reemplaza marcadores en el HTML con los valores de $params
+            foreach ($params as $key => $value) {
+                $html_content = str_replace("{{" . $key . "}}", $value, $html_content);
+            }
+            $subject = 'Recuperación de contraseña';
+
+            // Envía el correo electrónico con el contenido HTML
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            return wp_mail($email, $subject, $html_content, $headers);
+        } else {
+            return false; // El archivo HTML no existe
+        }
+
     }
 
     /* FUNCTIONS API REST CHAMILO */
@@ -316,7 +354,7 @@ class ChamiloConnect
      * @throws Exception|GuzzleException
      *
      */
-    function getUserProfile($username, $apiKey)
+    function getUserProfile($username, $apiKey): int
     {
         global $webserviceURL;
         $client = new GuzzleClient([

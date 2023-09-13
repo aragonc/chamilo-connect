@@ -259,9 +259,9 @@ if (is_user_logged_in()) {
                         data: { email: email },
                         dataType: 'json',
                         success: function(response) {
-                            console.log(response);
+                            //console.log(response);
                             let resultValue = response.result;
-                            console.log(resultValue);
+                            //console.log(resultValue);
                             if(!resultValue){
                                 emailStatus.removeClass('alert alert-danger');
                                 emailStatus.addClass('alert alert-success');

@@ -19,7 +19,8 @@
     border-radius: 10px;
 }
 .register-user .btn-primary,
-.login-user .btn-primary{
+.login-user .btn-primary,
+.lost-password .btn-primary{
     background: #808de8;
     border-radius: 0;
     text-transform: uppercase;
@@ -30,12 +31,14 @@
     margin-bottom: 2rem;
 }
 .register-user .btn-primary:hover,
-.login-user .btn-primary:hover{
+.login-user .btn-primary:hover,
+.lost-password .btn-primary:hover{
     color: #bdc8f2;
     background: #808de8;
     border: 1px solid #808de8;
 }
-.register-user .help{
+.register-user .help,
+.lost-password .help{
     font-size: 12px;
     padding: 1rem;
     font-style:italic;
