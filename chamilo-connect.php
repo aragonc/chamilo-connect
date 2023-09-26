@@ -97,6 +97,7 @@ function chamilo_submenu_pages_callback() {
     $titleLogin = get_option('chamilo_login_title');
     $helpLogin = get_option('chamilo_login_help');
     $imageLogin = get_option('chamilo_login_image_url','');
+    $hideInputsDescription = get_option('chamilo_login_inputs_description');
 
     $upload_error = null;
     $image_updated = false;
@@ -104,9 +105,11 @@ function chamilo_submenu_pages_callback() {
     if (isset($_POST['save'])) {
         $titleLogin = $_POST['title_login'];
         $helpLogin = $_POST['help_login'];
+        $hideInputsDescription = isset($_POST['hide_inputs_description']) ? 1 : 0;
+
         update_option('chamilo_login_title', $titleLogin);
         update_option('chamilo_login_help', $helpLogin);
-
+        update_option('chamilo_login_inputs_description', $hideInputsDescription);
 
         $image = $_FILES['image_login'];
         if ($image['error'] === UPLOAD_ERR_OK) {
@@ -209,6 +212,17 @@ function chamilo_submenu_pages_callback() {
                                     <img src="<?php echo $imageUrlThumbnail; ?>">
                                 </div>
                             <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            Ocultar descripción de inputs
+                        </th>
+                        <td>
+                            <label for="hide_inputs_description">
+                                <input type="checkbox" name="hide_inputs_description" id="hide_inputs_description" <?php checked( $hideInputsDescription, true ); ?> value="<?php echo $hideInputsDescription; ?>">
+                                Permite ocultar la descripción de los inputs del formulario de login.
+                            </label>
                         </td>
                     </tr>
                     </tbody>

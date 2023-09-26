@@ -17,7 +17,7 @@ body{
 .title{
     font-weight: 600;
     padding: 0;
-    margin: 0 0 1rem 0;
+    margin: 1rem 0 1.5rem 0;
     color: var(--color-primary);
 }
 .help{
@@ -28,6 +28,7 @@ body{
 .login-user .form-group label{
     font-size: 14px;
     font-weight: 600;
+    color: var(--color-secundary);
 }
 .register-user .form-group .form-control,
 .login-user .form-group .form-control{
@@ -74,6 +75,9 @@ body{
 }
 .login-user .lost-password{
     text-align: center;
+}
+.padding-login{
+    padding: 0 3rem !important;
 }
 #paswordtrength{
     margin: 10px 0;
@@ -163,7 +167,7 @@ body{
     width: 50%;
 }
 @media (max-width: 480px) {
-    .img-form {
+    .img-form, .login-wrap {
         width: 100%;
     }
 }
