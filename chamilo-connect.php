@@ -185,9 +185,10 @@ function chamilo_submenu_pages_callback() {
         <?php endif; ?>
         <div class="nav-tab-wrapper">
             <a class="nav-tab nav-tab-active" href="#tab-login">Login</a>
+            <a class="nav-tab" href="#tab-register">Register</a>
         </div>
         <form method="post" enctype="multipart/form-data">
-            <div id="tab-login">
+            <div id="tab-login"  class="tab-content">
                 <table class="form-table">
                     <tbody>
                     <tr>
@@ -248,8 +249,29 @@ function chamilo_submenu_pages_callback() {
                     ?>
                 </div>
             </div>
+            <div id="tab-register" class="tab-content" style="display: none;">
+                <p>Aquí va el contenido de la pestaña de registro.</p>
+            </div>
         </form>
     </div>
+    <script>
+        jQuery(function ($) {
+            // Manejar el cambio de pestaña al hacer clic en el enlace
+            $('.nav-tab-wrapper a').click(function (e) {
+                e.preventDefault();
+                var tabId = $(this).attr('href');
+
+                // Ocultar todas las pestañas de contenido
+                $('.tab-content').hide();
+                // Mostrar la pestaña de contenido correspondiente al enlace clicado
+                $(tabId).show();
+
+                // Agregar y quitar la clase "nav-tab-active" para resaltar la pestaña activa
+                $('.nav-tab').removeClass('nav-tab-active');
+                $(this).addClass('nav-tab-active');
+            });
+        });
+    </script>
     <?php
 }
 

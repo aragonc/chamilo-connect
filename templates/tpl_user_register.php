@@ -66,7 +66,7 @@ if (is_user_logged_in()) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-md-12 col-lg-10">
-                    <div class="wrap d-md-flex">
+                    <div class="wrap d-md-flex bg-color">
                         <div class="img-form">
                             <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/register.svg'; ?>" alt="" class="img-fluid">
                         </div>
