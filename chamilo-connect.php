@@ -117,7 +117,6 @@ function chamilo_submenu_pages_callback() {
             $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/'; // Directorio "chamilo"
             $image_name = sanitize_file_name($image['name']);
             $image_path = $chamilo_upload_dir . $image_name;
-            //$image_url = trailingslashit($upload_dir['baseurl']) . 'chamilo/' . $image_name;
 
             // Crea la carpeta "chamilo" si no existe
             if (!file_exists($chamilo_upload_dir)) {
@@ -126,9 +125,7 @@ function chamilo_submenu_pages_callback() {
 
             // Mueve la imagen al directorio de carga
             if (move_uploaded_file($image['tmp_name'], $image_path)) {
-                // Obtén las dimensiones de la imagen
                 list($width, $height) = getimagesize($image_path);
-
                 if ($width == 650 && $height == 800) {
                     $image_editor = wp_get_image_editor($image_path);
                     if (!is_wp_error($image_editor)) {
@@ -158,8 +155,20 @@ function chamilo_submenu_pages_callback() {
                 $upload_error = "Error al subir la imagen.";
             }
         }
-
-
+    }
+    if (isset($_POST['delete_image'])) {
+        $upload_dir = wp_upload_dir();
+        $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/';
+        $image_path = $chamilo_upload_dir . $imageLogin;
+        $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $imageLogin;
+        if (file_exists($image_path)) {
+            unlink($image_path);
+            delete_option('chamilo_login_image_url');
+        }
+        if (file_exists($thumbnail_path)) {
+            unlink($thumbnail_path);
+        }
+        $image_updated = true;
     }
     ?>
     <div class="wrap">
@@ -169,8 +178,11 @@ function chamilo_submenu_pages_callback() {
             <div class="error">
                 <p><?php echo esc_html($upload_error); ?></p>
             </div>
+        <?php elseif ($image_updated) : ?>
+            <div class="updated">
+                <p>La imagen ha sido actualizada o eliminada correctamente.</p>
+            </div>
         <?php endif; ?>
-
         <div class="nav-tab-wrapper">
             <a class="nav-tab nav-tab-active" href="#tab-login">Login</a>
         </div>
@@ -203,14 +215,17 @@ function chamilo_submenu_pages_callback() {
                             <label for="image_login">Imagen de la página de login</label>
                         </th>
                         <td>
-                            <input type="file" name="image_login" id="image_login">
-                            <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px de alto.</p>
+
                             <?php if(!empty($imageLogin)):
                                     $imageUrlThumbnail = get_site_url().'/wp-content/uploads/chamilo/thumbnail_'. $imageLogin;
                                 ?>
                                 <div class="thumbnail_login">
                                     <img src="<?php echo $imageUrlThumbnail; ?>">
                                 </div>
+                                <input type="submit" name="delete_image" class="button success" value="Eliminar Imagen">
+                            <?php else: ?>
+                                <input type="file" name="image_login" id="image_login">
+                                <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px de alto.</p>
                             <?php endif; ?>
                         </td>
                     </tr>
