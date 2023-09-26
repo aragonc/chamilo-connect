@@ -244,7 +244,7 @@ if (is_user_logged_in()) {
 
             //Ajax email user exist.
             $(document).ready(function() {
-                let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/user.ajax.php'; ?>";
+                let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/ajax.php'; ?>";
                 // Referencia al campo de entrada de correo electrónico
                 let emailInput = $("#email");
 
