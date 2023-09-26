@@ -102,7 +102,7 @@ if ($hideHeaderFooter) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-md-12 col-lg-10">
-                    <div class="wrap d-md-flex">
+                    <div class="wrap d-md-flex bg-color">
                         <div class="img-form">
                             <?php if(!empty($imageLogin)):
                                     $imageUrlLogin = home_url().'/wp-content/uploads/chamilo/'.$imageLogin;
@@ -115,7 +115,7 @@ if ($hideHeaderFooter) {
                             <?php endif; ?>
                         </div>
                         <div class="login-wrap">
-                            <div class="p-4 p-md-4">
+                            <div class="p-4 p-md-5">
 
 
                             <h2 class="title"><?php echo $titleLogin; ?></h2>
