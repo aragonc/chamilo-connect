@@ -51,9 +51,9 @@ class ChamiloConnect
             if ($custom_logo_url) {
                 $logo_url = $custom_logo_url[0];
                 if($print){
-                    echo '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
+                    echo '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" style="width:300px;" alt="'.get_bloginfo('name').'"></a>';
                 } else {
-                    return '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" alt="'.get_bloginfo('name').'"></a>';
+                    return '<a href="'.$blog_url.'"><img src="' . esc_url($logo_url) . '" class="img-fluid" style="width:300px;" alt="'.get_bloginfo('name').'"></a>';
                 }
 
             }
