@@ -80,7 +80,279 @@ function chamilo_create_menu()
         plugin_dir_url(__FILE__) . 'images/chamilo.svg',
         '2'
     );
+
+    // Agrega un submenú al menú principal
+    add_submenu_page(
+        'chamilo_connect_configuration', // Identificador del menú principal
+        'Opción del Submenú',
+        'Configuración de paginas',
+        'manage_options',
+        'chamilo_submenu_pages', // Slug único para el submenú
+        'chamilo_submenu_pages_callback' // Función que muestra el contenido del submenú
+    );
 }
+
+function chamilo_submenu_pages_callback() {
+
+    $titleLogin = get_option('chamilo_login_title');
+    $helpLogin = get_option('chamilo_login_help');
+    $imageLogin = get_option('chamilo_login_image_url','');
+
+    $upload_error = null;
+    $image_updated = false;
+
+    if (isset($_POST['save'])) {
+        $titleLogin = $_POST['title_login'];
+        $helpLogin = $_POST['help_login'];
+        update_option('chamilo_login_title', $titleLogin);
+        update_option('chamilo_login_help', $helpLogin);
+
+
+        $image = $_FILES['image_login'];
+        if ($image['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = wp_upload_dir(); // Obtiene el directorio de carga de WordPress
+            $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/'; // Directorio "chamilo"
+            $image_name = sanitize_file_name($image['name']);
+            $image_path = $chamilo_upload_dir . $image_name;
+            //$image_url = trailingslashit($upload_dir['baseurl']) . 'chamilo/' . $image_name;
+
+            // Crea la carpeta "chamilo" si no existe
+            if (!file_exists($chamilo_upload_dir)) {
+                mkdir($chamilo_upload_dir, 0755, true);
+            }
+
+            // Mueve la imagen al directorio de carga
+            if (move_uploaded_file($image['tmp_name'], $image_path)) {
+                // Obtén las dimensiones de la imagen
+                list($width, $height) = getimagesize($image_path);
+
+                if ($width == 650 && $height == 800) {
+                    $image_editor = wp_get_image_editor($image_path);
+                    if (!is_wp_error($image_editor)) {
+                        $image_editor->resize(650, 800, true);
+                        $image_editor->save($image_path);
+                    }
+
+                    $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $image_name;
+                    if (copy($image_path, $thumbnail_path)) {
+                        $thumbnail_editor = wp_get_image_editor($thumbnail_path);
+                        if (!is_wp_error($thumbnail_editor)) {
+                            $thumbnail_editor->resize(150, 150, true);
+                            $thumbnail_editor->save($thumbnail_path);
+                        }
+                    }
+
+                    // Guarda la ruta de la imagen en una opción usando update_option
+                    update_option('chamilo_login_image_url', $image_name);
+                    // Marcar que la imagen se ha actualizado correctamente
+                    $image_updated = true;
+
+                } else {
+                    $upload_error = "La imagen debe tener dimensiones de 650x800 píxeles.";
+                    unlink($image_path); // Elimina la imagen no válida
+                }
+            } else {
+                $upload_error = "Error al subir la imagen.";
+            }
+        }
+
+
+    }
+    ?>
+    <div class="wrap">
+        <h1>Configuración páginas del usuario</h1>
+
+        <?php if (!empty($upload_error)) : ?>
+            <div class="error">
+                <p><?php echo esc_html($upload_error); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <div class="nav-tab-wrapper">
+            <a class="nav-tab nav-tab-active" href="#tab-login">Login</a>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            <div id="tab-login">
+                <table class="form-table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">
+                            <label for="title_login">Titulo de la página de login</label>
+                        </th>
+                        <td>
+                            <input type="text" id="title_login" name="title_login" class="regular-text"
+                                   value="<?php echo $titleLogin; ?>" required>
+                            <p class="description">Escribe el titulo que se mostrara en la página de login</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="help_login">Texto de ayuda</label>
+                        </th>
+                        <td>
+                            <input type="text" id="help_login" name="help_login" class="regular-text"
+                                   value="<?php echo $helpLogin; ?>" required>
+                            <p class="description">Escribe un texto de ayuda descriptivo para la página de login</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="image_login">Imagen de la página de login</label>
+                        </th>
+                        <td>
+                            <input type="file" name="image_login" id="image_login">
+                            <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px de alto.</p>
+                            <?php if(!empty($imageLogin)):
+                                    $imageUrlThumbnail = get_site_url().'/wp-content/uploads/chamilo/thumbnail_'. $imageLogin;
+                                ?>
+                                <div class="thumbnail_login">
+                                    <img src="<?php echo $imageUrlThumbnail; ?>">
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="submit">
+                    <?php
+                    submit_button('Guardar configuración', 'primary', 'save', false);
+                    ?>
+                </div>
+            </div>
+        </form>
+    </div>
+    <?php
+}
+
+/**
+ * @throws \GuzzleHttp\Exception\GuzzleException
+ */
+function chamilo_configuration_configuration_callback()
+{
+    // Obtener los valores actuales de los datos guardados
+    $urlChamilo = get_option('chamilo_connect_url');
+    $apiKeyChamilo = get_option('chamilo_connect_apikey');
+    $userAdminChamilo = get_option('chamilo_connect_username');
+    $passAdminChamilo = get_option('chamilo_connect_password');
+    $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+
+    if (isset($_POST['save'])) {
+        $urlChamilo = $_POST['url_chamilo'];
+        $apiKeyChamilo = $_POST['apikey_chamilo'];
+        $userAdminChamilo = $_POST['username_chamilo'];
+        $passAdminChamilo = $_POST['password_chamilo'];
+        $hideHeaderFooter = isset($_POST['hide_header_footer']) ? 1 : 0;
+
+        update_option('chamilo_connect_url', $urlChamilo);
+        update_option('chamilo_connect_apikey', $apiKeyChamilo);
+        update_option('chamilo_connect_username', $userAdminChamilo);
+        update_option('chamilo_connect_password', $passAdminChamilo);
+        update_option('chamilo_connect_hide_header_footer', $hideHeaderFooter);
+    }
+    $rps = false;
+    if ( isset( $_POST['test'] ) ) {
+        $chamilo = new ChamiloConnect();
+        $rps = $chamilo->connectStatus();
+    }
+    ?>
+
+    <div class="wrap">
+        <h1>Configuración Chamilo Connect</h1>
+        <?php if($rps): ?>
+            <div class="update-nag notice notice-info inline">
+                Conección establecida correctamente con el Chamilo <strong><a target="_blank" href="<?php echo $urlChamilo; ?>"><?php echo $urlChamilo; ?></a></strong>
+            </div>
+        <?php endif; ?>
+        <div id="pw_wrap">
+            <form method="post" >
+                <table class="form-table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">
+                            <label for="url_chamilo">Dirección de Chamilo (URL)</label>
+                        </th>
+                        <td>
+                            <input type="text" id="url_chamilo" name="url_chamilo" class="regular-text"
+                                   value="<?php echo $urlChamilo; ?>" required>
+                            <p class="description">Escribe la url del aula virtual chamilo para conectar</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="apikey_chamilo">API KEY Chamilo:</label>
+                        </th>
+                        <td>
+                            <input type="text" id="apikey_chamilo" name="apikey_chamilo" class="regular-text"
+                                   value="<?php echo $apiKeyChamilo; ?>" required>
+                            <p class="description">El Segurity Key lo puedes encontrar en el archivo de
+                                configuration.php de tu aula virtual Chamilo</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <label for="username_chamilo">Usuario Administrador de Chamilo</label>
+                        </th>
+                        <td>
+                            <input type="text" id="username_chamilo" name="username_chamilo" class="regular-text"
+                                   value="<?php echo $userAdminChamilo; ?>">
+                            <p class="description">Te sugerimos colocar un usuario administrador diferente solo, para la conexión con Chamilo</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <label for="password_chamilo">Contraseña Administrador de Chamilo</label>
+                        </th>
+                        <td>
+                            <input type="password" id="password_chamilo" name="password_chamilo" class="regular-text"
+                                   value="<?php echo $passAdminChamilo; ?>">
+                            <p class="description">El usuario administrador de la conexión debe de tener una contraseña fuerte</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            Ocultar el header y footer
+                        </th>
+                        <td>
+                            <label for="hide_header_footer">
+                                <input type="checkbox" name="hide_header_footer" id="hide_header_footer" <?php checked( $hideHeaderFooter, true ); ?> value="<?php echo $hideHeaderFooter; ?>">
+                                Permite ocultar la cabecera y el pie de pagina de las paginas de inicio de sesión, registro y contraseña olvidada.
+                            </label>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+                <div class="submit">
+                    <?php
+                    submit_button('Guardar configuración', 'primary', 'save', false);
+                    submit_button('Probar la conexión', 'success', 'test', false);
+                    ?>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        jQuery(document).ready(function($) {
+            // Capturar el evento clic en el checkbox
+            $('#hide_header_footer').on('click', function() {
+                // Obtener el valor actual del checkbox
+                var currentValue = $(this).val();
+
+                // Cambiar el valor del checkbox
+                if (currentValue === '1') {
+                    $(this).val('0');
+                } else {
+                    $(this).val('1');
+                }
+            });
+        });
+    </script>
+    <?php
+}
+
 
 //add css boostrap
 // Incluir Bootstrap CSS
@@ -89,12 +361,14 @@ function resource_css() {
     wp_enqueue_style( 'bootstrap_css',
         'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css',
         array(),
-        '4.1.3'
+        '4.1.3',
+    'all'
     );
     wp_enqueue_style( 'chamilo_css',
         $urlPlugin.'css/style.css',
         array(),
-        '1.1'
+        '1.1',
+    'all'
     );
     wp_enqueue_style( 'strength_css',
         $urlPlugin.'js/strength/strength.css',
@@ -102,7 +376,7 @@ function resource_css() {
         '1.0'
     );
 }
-add_action( 'wp_enqueue_scripts', 'resource_css');
+add_action( 'wp_enqueue_scripts', 'resource_css',9999);
 
 // Incluir Bootstrap JS y dependencia popper
 function resource_js() {
@@ -394,135 +668,6 @@ function chamilo_delete_pages()
         }
     }
 
-}
-
-/**
- * @throws \GuzzleHttp\Exception\GuzzleException
- */
-function chamilo_configuration_configuration_callback()
-{
-    // Obtener los valores actuales de los datos guardados
-    $urlChamilo = get_option('chamilo_connect_url');
-    $apiKeyChamilo = get_option('chamilo_connect_apikey');
-    $userAdminChamilo = get_option('chamilo_connect_username');
-    $passAdminChamilo = get_option('chamilo_connect_password');
-    $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
-
-    if (isset($_POST['save'])) {
-        $urlChamilo = $_POST['url_chamilo'];
-        $apiKeyChamilo = $_POST['apikey_chamilo'];
-        $userAdminChamilo = $_POST['username_chamilo'];
-        $passAdminChamilo = $_POST['password_chamilo'];
-        $hideHeaderFooter = isset($_POST['hide_header_footer']) ? 1 : 0;
-
-        update_option('chamilo_connect_url', $urlChamilo);
-        update_option('chamilo_connect_apikey', $apiKeyChamilo);
-        update_option('chamilo_connect_username', $userAdminChamilo);
-        update_option('chamilo_connect_password', $passAdminChamilo);
-        update_option('chamilo_connect_hide_header_footer', $hideHeaderFooter);
-    }
-    $rps = false;
-    if ( isset( $_POST['test'] ) ) {
-        $chamilo = new ChamiloConnect();
-        $rps = $chamilo->connectStatus();
-    }
-    ?>
-
-    <div class="wrap">
-        <h1>Configuración Chamilo Connect</h1>
-        <?php if($rps): ?>
-            <div class="update-nag notice notice-info inline">
-                Conección establecida correctamente con el Chamilo <strong><a target="_blank" href="<?php echo $urlChamilo; ?>"><?php echo $urlChamilo; ?></a></strong>
-            </div>
-        <?php endif; ?>
-        <div id="pw_wrap">
-            <form method="post" >
-                <table class="form-table">
-                    <tbody>
-                    <tr>
-                        <th scope="row">
-                            <label for="url_chamilo">Dirección de Chamilo (URL)</label>
-                        </th>
-                        <td>
-                            <input type="text" id="url_chamilo" name="url_chamilo" class="regular-text"
-                                   value="<?php echo $urlChamilo; ?>" required>
-                            <p class="description">Escribe la url del aula virtual chamilo para conectar</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="apikey_chamilo">API KEY Chamilo:</label>
-                        </th>
-                        <td>
-                            <input type="text" id="apikey_chamilo" name="apikey_chamilo" class="regular-text"
-                                   value="<?php echo $apiKeyChamilo; ?>" required>
-                            <p class="description">El Segurity Key lo puedes encontrar en el archivo de
-                                configuration.php de tu aula virtual Chamilo</p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">
-                            <label for="username_chamilo">Usuario Administrador de Chamilo</label>
-                        </th>
-                        <td>
-                            <input type="text" id="username_chamilo" name="username_chamilo" class="regular-text"
-                                   value="<?php echo $userAdminChamilo; ?>">
-                            <p class="description">Te sugerimos colocar un usuario administrador diferente solo, para la conexión con Chamilo</p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">
-                            <label for="password_chamilo">Contraseña Administrador de Chamilo</label>
-                        </th>
-                        <td>
-                            <input type="password" id="password_chamilo" name="password_chamilo" class="regular-text"
-                                   value="<?php echo $passAdminChamilo; ?>">
-                            <p class="description">El usuario administrador de la conexión debe de tener una contraseña fuerte</p>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">
-                            Ocultar el header y footer
-                        </th>
-                        <td>
-                            <label for="hide_header_footer">
-                                <input type="checkbox" name="hide_header_footer" id="hide_header_footer" <?php checked( $hideHeaderFooter, true ); ?> value="<?php echo $hideHeaderFooter; ?>">
-                                Permite ocultar la cabecera y el pie de pagina de las paginas de inicio de sesión, registro y contraseña olvidada.
-                            </label>
-                        </td>
-                    </tr>
-
-                    </tbody>
-                </table>
-                <div class="submit">
-                    <?php
-                    submit_button('Guardar configuración', 'primary', 'save', false);
-                    submit_button('Probar la conexión', 'success', 'test', false);
-                    ?>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script>
-        jQuery(document).ready(function($) {
-            // Capturar el evento clic en el checkbox
-            $('#hide_header_footer').on('click', function() {
-                // Obtener el valor actual del checkbox
-                var currentValue = $(this).val();
-
-                // Cambiar el valor del checkbox
-                if (currentValue === '1') {
-                    $(this).val('0');
-                } else {
-                    $(this).val('1');
-                }
-            });
-        });
-    </script>
-    <?php
 }
 
 function remove_admin_bar_for_subscribers() {

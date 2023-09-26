@@ -81,6 +81,10 @@ if (is_user_logged_in()) {
 
 //hide header
 $hideHeaderFooter = get_option('chamilo_connect_hide_header_footer');
+$titleLogin = get_option('chamilo_login_title');
+$helpLogin = get_option('chamilo_login_help');
+$imageLogin = get_option('chamilo_login_image_url','');
+
 if ($hideHeaderFooter) {
     $chamilo->get_header_custom();
 } else {
@@ -99,12 +103,22 @@ if ($hideHeaderFooter) {
             <div class="row justify-content-center">
                 <div class="col-md-12 col-lg-10">
                     <div class="wrap d-md-flex">
-                        <div class="img-form pl-5 pr-5">
-                            <img src="<?php echo $chamilo->get_url_plugin_chamilo() . '/images/login.svg'; ?>" alt=""
+                        <div class="img-form">
+                            <?php if(!empty($imageLogin)):
+                                    $imageUrlLogin = home_url().'/wp-content/uploads/chamilo/'.$imageLogin;
+                                ?>
+                                <img src="<?php echo $imageUrlLogin; ?>" alt=""
+                                     class="img-fluid">
+                            <?php else: ?>
+                                <img src="<?php echo $chamilo->get_url_plugin_chamilo() . '/images/login.svg'; ?>" alt=""
                                  class="img-fluid">
+                            <?php endif; ?>
                         </div>
-                        <div class="login-wrap p-4 p-md-5">
-                            <h2 class="title">Acceso al Aula Virtual</h2>
+                        <div class="login-wrap">
+                            <div class="p-4 p-md-4">
+
+
+                            <h2 class="title"><?php echo $titleLogin; ?></h2>
                             <?php if ($msgError): ?>
                                 <div class="alert alert-danger" role="alert">
                                     <?php echo $msgError; ?>
@@ -154,6 +168,8 @@ if ($hideHeaderFooter) {
                                 </div>
 
                             </form>
+                            <div class="help"><?php echo $helpLogin; ?></div>
+                        </div>
                         </div>
                     </div>
                 </div>
