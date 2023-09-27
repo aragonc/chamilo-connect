@@ -463,4 +463,69 @@ class ChamiloConnect
         return false;
     }
 
+    public function deleteImage($imageName){
+        $upload_dir = wp_upload_dir();
+        $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/';
+        $image_path = $chamilo_upload_dir . $imageName;
+        $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $imageName;
+        if (file_exists($image_path)) {
+            unlink($image_path);
+            //
+        }
+        if (file_exists($thumbnail_path)) {
+            unlink($thumbnail_path);
+        }
+    }
+
+    public function  saveImageCrop($image, $max_w = 650, $max_h = 800): array
+    {
+        $message = null;
+        $image_name = null;
+        $image_path = null;
+        $image_url = null;
+
+        if ($image['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = wp_upload_dir();
+            $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/';
+            $image_name = sanitize_file_name($image['name']);
+            $image_path = $chamilo_upload_dir . $image_name;
+            $image_url = trailingslashit($upload_dir['baseurl']) . 'chamilo/' . $image_name;
+
+            if (!file_exists($chamilo_upload_dir)) {
+                mkdir($chamilo_upload_dir, 0755, true);
+            }
+
+            if (move_uploaded_file($image['tmp_name'], $image_path)) {
+                list($width, $height) = getimagesize($image_path);
+                if ($width >= $max_w && $height >= $max_h) {
+                    $image_editor = wp_get_image_editor($image_path);
+                    if (!is_wp_error($image_editor)) {
+                        $image_editor->resize($max_w, $max_h, true);
+                        $image_editor->save($image_path);
+                    }
+
+                    $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $image_name;
+                    if (copy($image_path, $thumbnail_path)) {
+                        $thumbnail_editor = wp_get_image_editor($thumbnail_path);
+                        if (!is_wp_error($thumbnail_editor)) {
+                            $thumbnail_editor->resize(150, 150, true);
+                            $thumbnail_editor->save($thumbnail_path);
+                        }
+                    }
+                    $message = "Imagen subida correctamente.";
+                } else {
+                    $message = "La imagen debe tener dimensiones de ".$max_w." / ".$max_h."píxeles.";
+                    unlink($image_path);
+                }
+            } else {
+                $message = "Error al subir la imagen.";
+            }
+        }
+        return [
+            'message' => $message,
+            'image_name' => $image_name,
+            'image_path' => $image_path,
+            'image_url' => $image_url
+        ];
+    }
 }

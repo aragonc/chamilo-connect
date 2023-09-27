@@ -10,7 +10,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: chamilo
 */
 
-require_once plugin_dir_path( __FILE__ ) . 'admin/ChamiloConnect.php';
+require_once plugin_dir_path(__FILE__) . 'admin/ChamiloConnect.php';
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -32,7 +32,7 @@ function chamilo_activation()
         PRIMARY KEY (id)
     ) $charset_collate;";
 
-    $sql.= "
+    $sql .= "
         CREATE TABLE $table_chamilo_recovery (
             id INT PRIMARY KEY AUTO_INCREMENT,
             user_email VARCHAR(100) NOT NULL DEFAULT '',
@@ -92,83 +92,49 @@ function chamilo_create_menu()
     );
 }
 
-function chamilo_submenu_pages_callback() {
-
+function chamilo_submenu_pages_callback()
+{
+    $chamilo = new ChamiloConnect();
     $titleLogin = get_option('chamilo_login_title');
+    $titleRegister = get_option('chamilo_register_title', 'Registro de usuario');
     $helpLogin = get_option('chamilo_login_help');
-    $imageLogin = get_option('chamilo_login_image_url','');
-    $hideInputsDescription = get_option('chamilo_login_inputs_description');
+    $imageLogin = get_option('chamilo_login_image_url', '');
+    $imageRegister = get_option('chamilo_register_image_url', '');
+    $hideInputsLogin = get_option('chamilo_login_inputs_description');
+    $hideInputsRegister = get_option('chamilo_register_inputs_description');
 
     $upload_error = null;
-    $image_updated = false;
 
-    if (isset($_POST['save'])) {
+    if (isset($_POST['save-login'])) {
         $titleLogin = $_POST['title_login'];
         $helpLogin = $_POST['help_login'];
-        $hideInputsDescription = isset($_POST['hide_inputs_description']) ? 1 : 0;
+        $hideInputsLogin = isset($_POST['hide_inputs_description']) ? 1 : 0;
 
         update_option('chamilo_login_title', $titleLogin);
         update_option('chamilo_login_help', $helpLogin);
-        update_option('chamilo_login_inputs_description', $hideInputsDescription);
-
-        $image = $_FILES['image_login'];
-        if ($image['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = wp_upload_dir(); // Obtiene el directorio de carga de WordPress
-            $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/'; // Directorio "chamilo"
-            $image_name = sanitize_file_name($image['name']);
-            $image_path = $chamilo_upload_dir . $image_name;
-
-            // Crea la carpeta "chamilo" si no existe
-            if (!file_exists($chamilo_upload_dir)) {
-                mkdir($chamilo_upload_dir, 0755, true);
-            }
-
-            // Mueve la imagen al directorio de carga
-            if (move_uploaded_file($image['tmp_name'], $image_path)) {
-                list($width, $height) = getimagesize($image_path);
-                if ($width == 650 && $height == 800) {
-                    $image_editor = wp_get_image_editor($image_path);
-                    if (!is_wp_error($image_editor)) {
-                        $image_editor->resize(650, 800, true);
-                        $image_editor->save($image_path);
-                    }
-
-                    $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $image_name;
-                    if (copy($image_path, $thumbnail_path)) {
-                        $thumbnail_editor = wp_get_image_editor($thumbnail_path);
-                        if (!is_wp_error($thumbnail_editor)) {
-                            $thumbnail_editor->resize(150, 150, true);
-                            $thumbnail_editor->save($thumbnail_path);
-                        }
-                    }
-
-                    // Guarda la ruta de la imagen en una opción usando update_option
-                    update_option('chamilo_login_image_url', $image_name);
-                    // Marcar que la imagen se ha actualizado correctamente
-                    $image_updated = true;
-
-                } else {
-                    $upload_error = "La imagen debe tener dimensiones de 650x800 píxeles.";
-                    unlink($image_path); // Elimina la imagen no válida
-                }
-            } else {
-                $upload_error = "Error al subir la imagen.";
-            }
+        update_option('chamilo_login_inputs_description', $hideInputsLogin);
+        if (isset($_FILES['image_login'])) {
+            $imageLoginCrop = $chamilo->saveImageCrop($_FILES['image_login']);
+            update_option('chamilo_login_image_url', $imageLoginCrop['image_name']);
         }
     }
-    if (isset($_POST['delete_image'])) {
-        $upload_dir = wp_upload_dir();
-        $chamilo_upload_dir = trailingslashit($upload_dir['basedir']) . 'chamilo/';
-        $image_path = $chamilo_upload_dir . $imageLogin;
-        $thumbnail_path = $chamilo_upload_dir . 'thumbnail_' . $imageLogin;
-        if (file_exists($image_path)) {
-            unlink($image_path);
-            delete_option('chamilo_login_image_url');
+
+    if (isset($_POST['save-register'])) {
+        $titleRegister = $_POST['title_register'];
+        $hideInputsRegister = isset($_POST['hide_inputs_description']) ? 1 : 0;
+
+        update_option('chamilo_register_title', $titleRegister);
+        update_option('chamilo_register_inputs_description', $hideInputsRegister);
+
+        if (isset($_FILES['image_register'])) {
+            $imageRegisterCrop = $chamilo->saveImageCrop($_FILES['image_register']);
+            update_option('chamilo_register_image_url', $imageRegisterCrop['image_name']);
         }
-        if (file_exists($thumbnail_path)) {
-            unlink($thumbnail_path);
-        }
-        $image_updated = true;
+    }
+
+    if (isset($_POST['delete_image_register'])) {
+        $chamilo->deleteImage($imageRegister);
+        delete_option('chamilo_register_image_url');
     }
     ?>
     <div class="wrap">
@@ -178,17 +144,14 @@ function chamilo_submenu_pages_callback() {
             <div class="error">
                 <p><?php echo esc_html($upload_error); ?></p>
             </div>
-        <?php elseif ($image_updated) : ?>
-            <div class="updated">
-                <p>La imagen ha sido actualizada o eliminada correctamente.</p>
-            </div>
         <?php endif; ?>
         <div class="nav-tab-wrapper">
             <a class="nav-tab nav-tab-active" href="#tab-login">Login</a>
             <a class="nav-tab" href="#tab-register">Register</a>
         </div>
-        <form method="post" enctype="multipart/form-data">
-            <div id="tab-login"  class="tab-content">
+
+        <div id="tab-login" class="tab-content">
+            <form id="form-page-login" method="post" enctype="multipart/form-data">
                 <table class="form-table">
                     <tbody>
                     <tr>
@@ -217,16 +180,18 @@ function chamilo_submenu_pages_callback() {
                         </th>
                         <td>
 
-                            <?php if(!empty($imageLogin)):
-                                    $imageUrlThumbnail = get_site_url().'/wp-content/uploads/chamilo/thumbnail_'. $imageLogin;
+                            <?php if (!empty($imageLogin)):
+                                $imageUrlThumbnail = get_site_url() . '/wp-content/uploads/chamilo/thumbnail_' . $imageLogin;
                                 ?>
                                 <div class="thumbnail_login">
                                     <img src="<?php echo $imageUrlThumbnail; ?>">
                                 </div>
-                                <input type="submit" name="delete_image" class="button success" value="Eliminar Imagen">
+                                <input type="submit" name="delete_image_login" class="button success"
+                                       value="Eliminar Imagen">
                             <?php else: ?>
                                 <input type="file" name="image_login" id="image_login">
-                                <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px de alto.</p>
+                                <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px
+                                    de alto.</p>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -236,7 +201,9 @@ function chamilo_submenu_pages_callback() {
                         </th>
                         <td>
                             <label for="hide_inputs_description">
-                                <input type="checkbox" name="hide_inputs_description" id="hide_inputs_description" <?php checked( $hideInputsDescription, true ); ?> value="<?php echo $hideInputsDescription; ?>">
+                                <input type="checkbox" name="hide_inputs_description"
+                                       id="hide_inputs_description" <?php checked($hideInputsLogin, true); ?>
+                                       value="<?php echo $hideInputsLogin; ?>">
                                 Permite ocultar la descripción de los inputs del formulario de login.
                             </label>
                         </td>
@@ -245,14 +212,69 @@ function chamilo_submenu_pages_callback() {
                 </table>
                 <div class="submit">
                     <?php
-                    submit_button('Guardar configuración', 'primary', 'save', false);
+                    submit_button('Guardar configuración', 'primary', 'save-login', false);
                     ?>
                 </div>
-            </div>
-            <div id="tab-register" class="tab-content" style="display: none;">
-                <p>Aquí va el contenido de la pestaña de registro.</p>
-            </div>
-        </form>
+            </form>
+        </div>
+        <div id="tab-register" class="tab-content" style="display: none;">
+            <form id="form-page-register" method="post" enctype="multipart/form-data">
+                <table class="form-table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">
+                            <label for="title_register">Titulo de la página de registro</label>
+                        </th>
+                        <td>
+                            <input type="text" id="title_register" name="title_register" class="regular-text"
+                                   value="<?php echo $titleRegister; ?>" required>
+                            <p class="description">Escribe el titulo que se mostrara en la página de login</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="image_register">Imagen de la página de registro</label>
+                        </th>
+                        <td>
+
+                            <?php if (!empty($imageRegister)):
+                                $imageUrlRegisterThumbnail = get_site_url() . '/wp-content/uploads/chamilo/thumbnail_' . $imageRegister;
+                                ?>
+                                <div class="thumbnail_login">
+                                    <img src="<?php echo $imageUrlRegisterThumbnail; ?>">
+                                </div>
+                                <input type="submit" name="delete_image_register" class="button success"
+                                       value="Eliminar Imagen">
+                            <?php else: ?>
+                                <input type="file" name="image_register" id="image_register">
+                                <p class="description">La imagen debe de tener una dimesión de 650 px de ancho y 800 px
+                                    de alto.</p>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            Ocultar descripción de inputs
+                        </th>
+                        <td>
+                            <label for="hide_inputs_description_register">
+                                <input type="checkbox" name="hide_inputs_description_register"
+                                       id="hide_inputs_description" <?php checked($hideInputsRegister, true); ?>
+                                       value="<?php echo $hideInputsRegister; ?>">
+                                Permite ocultar la descripción de los inputs del formulario de registro.
+                            </label>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="submit">
+                    <?php
+                    submit_button('Guardar configuración', 'primary', 'save-register', false);
+                    ?>
+                </div>
+            </form>
+        </div>
+
     </div>
     <script>
         jQuery(function ($) {
@@ -301,7 +323,7 @@ function chamilo_configuration_configuration_callback()
         update_option('chamilo_connect_hide_header_footer', $hideHeaderFooter);
     }
     $rps = false;
-    if ( isset( $_POST['test'] ) ) {
+    if (isset($_POST['test'])) {
         $chamilo = new ChamiloConnect();
         $rps = $chamilo->connectStatus();
     }
@@ -309,13 +331,14 @@ function chamilo_configuration_configuration_callback()
 
     <div class="wrap">
         <h1>Configuración Chamilo Connect</h1>
-        <?php if($rps): ?>
+        <?php if ($rps): ?>
             <div class="update-nag notice notice-info inline">
-                Conección establecida correctamente con el Chamilo <strong><a target="_blank" href="<?php echo $urlChamilo; ?>"><?php echo $urlChamilo; ?></a></strong>
+                Conección establecida correctamente con el Chamilo <strong><a target="_blank"
+                                                                              href="<?php echo $urlChamilo; ?>"><?php echo $urlChamilo; ?></a></strong>
             </div>
         <?php endif; ?>
         <div id="pw_wrap">
-            <form method="post" >
+            <form method="post">
                 <table class="form-table">
                     <tbody>
                     <tr>
@@ -347,7 +370,8 @@ function chamilo_configuration_configuration_callback()
                         <td>
                             <input type="text" id="username_chamilo" name="username_chamilo" class="regular-text"
                                    value="<?php echo $userAdminChamilo; ?>">
-                            <p class="description">Te sugerimos colocar un usuario administrador diferente solo, para la conexión con Chamilo</p>
+                            <p class="description">Te sugerimos colocar un usuario administrador diferente solo, para la
+                                conexión con Chamilo</p>
                         </td>
                     </tr>
 
@@ -358,7 +382,8 @@ function chamilo_configuration_configuration_callback()
                         <td>
                             <input type="password" id="password_chamilo" name="password_chamilo" class="regular-text"
                                    value="<?php echo $passAdminChamilo; ?>">
-                            <p class="description">El usuario administrador de la conexión debe de tener una contraseña fuerte</p>
+                            <p class="description">El usuario administrador de la conexión debe de tener una contraseña
+                                fuerte</p>
                         </td>
                     </tr>
 
@@ -368,8 +393,11 @@ function chamilo_configuration_configuration_callback()
                         </th>
                         <td>
                             <label for="hide_header_footer">
-                                <input type="checkbox" name="hide_header_footer" id="hide_header_footer" <?php checked( $hideHeaderFooter, true ); ?> value="<?php echo $hideHeaderFooter; ?>">
-                                Permite ocultar la cabecera y el pie de pagina de las paginas de inicio de sesión, registro y contraseña olvidada.
+                                <input type="checkbox" name="hide_header_footer"
+                                       id="hide_header_footer" <?php checked($hideHeaderFooter, true); ?>
+                                       value="<?php echo $hideHeaderFooter; ?>">
+                                Permite ocultar la cabecera y el pie de pagina de las paginas de inicio de sesión,
+                                registro y contraseña olvidada.
                             </label>
                         </td>
                     </tr>
@@ -386,9 +414,9 @@ function chamilo_configuration_configuration_callback()
         </div>
     </div>
     <script>
-        jQuery(document).ready(function($) {
+        jQuery(document).ready(function ($) {
             // Capturar el evento clic en el checkbox
-            $('#hide_header_footer').on('click', function() {
+            $('#hide_header_footer').on('click', function () {
                 // Obtener el valor actual del checkbox
                 var currentValue = $(this).val();
 
@@ -407,51 +435,55 @@ function chamilo_configuration_configuration_callback()
 
 //add css boostrap
 // Incluir Bootstrap CSS
-function resource_css() {
-    $urlPlugin = plugin_dir_url( __FILE__ );
-    wp_enqueue_style( 'bootstrap_css',
+function resource_css()
+{
+    $urlPlugin = plugin_dir_url(__FILE__);
+    wp_enqueue_style('bootstrap_css',
         'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css',
         array(),
         '4.1.3',
-    'all'
+        'all'
     );
-    wp_enqueue_style( 'chamilo_css',
-        $urlPlugin.'css/style.css',
+    wp_enqueue_style('chamilo_css',
+        $urlPlugin . 'css/style.css',
         array(),
         '1.1',
-    'all'
+        'all'
     );
-    wp_enqueue_style( 'strength_css',
-        $urlPlugin.'js/strength/strength.css',
+    wp_enqueue_style('strength_css',
+        $urlPlugin . 'js/strength/strength.css',
         array(),
         '1.0'
     );
 }
-add_action( 'wp_enqueue_scripts', 'resource_css',9999);
+
+add_action('wp_enqueue_scripts', 'resource_css', 9999);
 
 // Incluir Bootstrap JS y dependencia popper
-function resource_js() {
-    $urlPlugin = plugin_dir_url( __FILE__ );
-    wp_enqueue_script( 'popper_js',
+function resource_js()
+{
+    $urlPlugin = plugin_dir_url(__FILE__);
+    wp_enqueue_script('popper_js',
         'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js',
         array(),
         '1.14.3',
         true
     );
-    wp_enqueue_script( 'bootstrap_js',
+    wp_enqueue_script('bootstrap_js',
         'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js',
-        array('jquery','popper_js'),
+        array('jquery', 'popper_js'),
         '4.1.3',
         true
     );
     wp_enqueue_script('strength_js',
-        $urlPlugin.'js/strength/strength.min.js',
+        $urlPlugin . 'js/strength/strength.min.js',
         array(),
         '1.0',
         true
     );
 }
-add_action( 'wp_enqueue_scripts', 'resource_js');
+
+add_action('wp_enqueue_scripts', 'resource_js');
 
 function chamilo_create_pages_user()
 {
@@ -539,68 +571,70 @@ function chamilo_add_template_to_select($post_templates, $wp_theme, $post, $post
         'tpl_recover_password.php' => __('Recover Password')
     ];
 }
-add_filter( 'theme_page_templates', 'chamilo_add_template_to_select', 10, 4 );
+
+add_filter('theme_page_templates', 'chamilo_add_template_to_select', 10, 4);
 
 /**
  * @throws Exception
  */
-function chamilo_load_plugin_template($template) {
+function chamilo_load_plugin_template($template)
+{
     $page_custom = get_page_template_slug();
-    switch ($page_custom){
+    switch ($page_custom) {
         case 'tpl_user_login.php':
             if ($theme_file = locate_template(array('tpl_user_login.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_login.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_login.php';
             }
             break;
         case 'tpl_user_register.php':
             if ($theme_file = locate_template(array('tpl_user_register.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_register.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_register.php';
             }
             break;
         case 'tpl_user_dashboard.php':
             if ($theme_file = locate_template(array('tpl_user_dashboard.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_dashboard.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_dashboard.php';
             }
             break;
         case 'tpl_user_account.php':
             if ($theme_file = locate_template(array('tpl_user_account.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_account.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_account.php';
             }
             break;
         case 'tpl_user_my_certificates.php':
             if ($theme_file = locate_template(array('tpl_user_my_certificates.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_my_certificates.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_my_certificates.php';
             }
             break;
         case 'tpl_user_my_courses.php':
             if ($theme_file = locate_template(array('tpl_user_my_courses.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_my_courses.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_my_courses.php';
             }
             break;
         case 'tpl_user_lostpassword.php':
             if ($theme_file = locate_template(array('tpl_user_lostpassword.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_user_lostpassword.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_user_lostpassword.php';
             }
             break;
         case 'tpl_recover_password.php':
             if ($theme_file = locate_template(array('tpl_recover_password.php'))) {
                 $template = $theme_file;
             } else {
-                $template = plugin_dir_path(__FILE__).'templates/tpl_recover_password.php';
+                $template = plugin_dir_path(__FILE__) . 'templates/tpl_recover_password.php';
             }
             break;
         default:
@@ -609,7 +643,7 @@ function chamilo_load_plugin_template($template) {
     return $template;
 }
 
-add_filter( 'template_include', 'chamilo_load_plugin_template' );
+add_filter('template_include', 'chamilo_load_plugin_template');
 
 if (!function_exists('chamilo_create_page')) {
     /**
@@ -721,14 +755,17 @@ function chamilo_delete_pages()
 
 }
 
-function remove_admin_bar_for_subscribers() {
+function remove_admin_bar_for_subscribers()
+{
     if (current_user_can('subscriber') && !is_admin()) {
         show_admin_bar(false);
     }
 }
+
 add_action('after_setup_theme', 'remove_admin_bar_for_subscribers');
 
-function get_user_login_bar(){
+function get_user_login_bar()
+{
     $chamilo = new ChamiloConnect();
     $urlSite = get_bloginfo('url');
     $plugin_url = plugin_dir_url(__FILE__);
@@ -737,102 +774,104 @@ function get_user_login_bar(){
     $current_user = wp_get_current_user();
     $userID = $current_user->ID;
 
-    if(!empty($userID)){
-        if($current_user->roles[0] != 'administrator'){
-            if($userID != 0){
+    if (!empty($userID)) {
+        if ($current_user->roles[0] != 'administrator') {
+            if ($userID != 0) {
                 $username = $current_user->user_login;
-                $apiKeyChamilo = get_user_meta($userID,'api_key_chamilo', true);
+                $apiKeyChamilo = get_user_meta($userID, 'api_key_chamilo', true);
                 $profile = $chamilo->getUserProfile($username, $apiKeyChamilo);
             }
         }
     }
 
-    $avatar =  $plugin_url.'images/profile.svg';
-    if(!empty($profile)){
+    $avatar = $plugin_url . 'images/profile.svg';
+    if (!empty($profile)) {
         $avatar = $profile['pictureUri'];
     }
 
     ?>
 
-    <?php if (is_user_logged_in()):?>
+    <?php if (is_user_logged_in()): ?>
 
     <ul class="navbar ml-auto user-login">
-            <!-- Nav Item - Alerts -->
-            <li class="nav-item dropdown no-arrow">
-                <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-bell fa-fw"></i>
-                    <!-- Counter - Alerts -->
-                    <span class="badge badge-danger badge-counter">3+</span>
-                </a>
-                <!-- Dropdown - Alerts -->
-                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
-                    <h6 class="dropdown-header">
-                        Alerts Center
-                    </h6>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="mr-3">
-                            <div class="icon-circle bg-primary">
-                                <i class="fas fa-file-alt text-white"></i>
-                            </div>
+        <!-- Nav Item - Alerts -->
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown"
+               aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-bell fa-fw"></i>
+                <!-- Counter - Alerts -->
+                <span class="badge badge-danger badge-counter">3+</span>
+            </a>
+            <!-- Dropdown - Alerts -->
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                 aria-labelledby="alertsDropdown">
+                <h6 class="dropdown-header">
+                    Alerts Center
+                </h6>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                    <div class="mr-3">
+                        <div class="icon-circle bg-primary">
+                            <i class="fas fa-file-alt text-white"></i>
                         </div>
-                        <div>
-                            <div class="small text-gray-500">December 12, 2019</div>
-                            <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                        </div>
-                    </a>
-
-                    <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                </div>
-            </li>
-
-            <!-- Nav Item - User Information -->
-            <li class="nav-item dropdown no-arrow mr-auto">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-
-                    <img class="img-profile rounded-circle" src="<?php echo $avatar; ?>">
-
+                    </div>
+                    <div>
+                        <div class="small text-gray-500">December 12, 2019</div>
+                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                    </div>
                 </a>
-                <!-- Dropdown - User Information -->
-                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                    <a class="dropdown-item" href="#">
-                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Mi perfil
-                    </a>
 
-                    <a class="dropdown-item" href="#">
-                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Mis cursos
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="<?php echo $logout_url; ?>" >
-                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Cerrar sesión
-                    </a>
-                </div>
-            </li>
+                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+            </div>
+        </li>
 
-        </ul>
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow mr-auto">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+               aria-haspopup="true" aria-expanded="false">
 
-    <?php else: ?>
+                <img class="img-profile rounded-circle" src="<?php echo $avatar; ?>">
+
+            </a>
+            <!-- Dropdown - User Information -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Mi perfil
+                </a>
+
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Mis cursos
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="<?php echo $logout_url; ?>">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Cerrar sesión
+                </a>
+            </div>
+        </li>
+
+    </ul>
+
+<?php else: ?>
     <div class="header-bar-login">
-            <ul class="btn-list no-list">
-                <li class="btn-list-item">
-                    <a href="<?php echo $urlSite; ?>/login" class="btn-cta btn-login">
-                        Ingresar
-                    </a>
-                </li>
-                <li class="btn-list-item">
-                    <a href="<?php echo $urlSite; ?>/register" class="btn-cta btn-register">
-                        Registrarse
-                    </a>
-                </li>
-            </ul>
+        <ul class="btn-list no-list">
+            <li class="btn-list-item">
+                <a href="<?php echo $urlSite; ?>/login" class="btn-cta btn-login">
+                    Ingresar
+                </a>
+            </li>
+            <li class="btn-list-item">
+                <a href="<?php echo $urlSite; ?>/register" class="btn-cta btn-register">
+                    Registrarse
+                </a>
+            </li>
+        </ul>
     </div>
-    <?php endif; ?>
+<?php endif; ?>
 
 
-
-<?php
+    <?php
 
 }
 
