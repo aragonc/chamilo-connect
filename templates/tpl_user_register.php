@@ -160,7 +160,7 @@ if (is_user_logged_in()) {
                                 </div>
 
                                 <div id="input_dni" class="form-group row" style="display:none;">
-                                    <label for="identifier" class="col-sm-3 col-form-label">Nº Documento o Cédula de Identidad (*)</label>
+                                    <label for="identifier" class="col-sm-3 col-form-label">Nº Documento o Cédula de Identidad</label>
                                     <div class="col-sm-9">
                                         <input type="text" name="identifier" class="form-control" id="identifier">
                                         <?php if(!$hideInputsRegister): ?>

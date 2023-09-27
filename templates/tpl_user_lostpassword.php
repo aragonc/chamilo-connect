@@ -57,13 +57,14 @@ if ($hideHeaderFooter) {
             </div>
             <div class="row justify-content-center">
                 <div class="col-md-12 col-lg-10">
-                    <div class="wrap d-md-flex">
+                    <div class="wrap d-md-flex bg-color">
                         <div class="img-form">
                             <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/lost_password.svg'; ?>" alt="" class="img-fluid">
                         </div>
-                        <div class="login-wrap p-4 p-md-5">
-                            <h2 class="title">¿Ha olvidado su contraseña?</h2>
-                            <form method="post" action="" id="lost-password" class="lost-password">
+                        <div class="login-wrap">
+                            <div class="padding-login">
+                                <h2 class="title">¿Ha olvidado su contraseña?</h2>
+                                <form method="post" action="" id="lost-password" class="lost-password">
 
                                 <div class="row">
                                     <div class="col-md-12">
@@ -95,6 +96,7 @@ if ($hideHeaderFooter) {
                                     </div>
                                 </div>
                             </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +107,7 @@ if ($hideHeaderFooter) {
     (function ($) {
         //Ajax email user exist.
         $(document).ready(function() {
-            let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/user.ajax.php'; ?>";
+            let urlAjax = "<?php echo $chamilo->get_url_plugin_chamilo().'/ajax/ajax.php'; ?>";
             // Referencia al campo de entrada de correo electrónico
             let emailInput = $("#email");
 
