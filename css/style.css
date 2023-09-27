@@ -30,6 +30,9 @@ body{
     font-weight: 600;
     color: var(--color-secundary);
 }
+.register-user .form-group label{
+    padding: 0;
+}
 .register-user .form-group .form-control,
 .login-user .form-group .form-control{
     background-color: #FFF !important;

@@ -17,6 +17,12 @@ if (is_user_logged_in()) {
     $userAdminChamilo = get_option('chamilo_connect_username');
     $passAdminChamilo = get_option('chamilo_connect_password');
 
+    $imageRegister = get_option('chamilo_register_image_url', '');
+
+    $hideInputsRegister = boolval(get_option('chamilo_register_inputs_description'));
+
+    $titleRegister = get_option('chamilo_register_title', 'Registro de usuario');
+
     if (isset($_POST['register-submit'])) {
         $params = [
             'first_name' => $_POST['firstname'],
@@ -68,10 +74,22 @@ if (is_user_logged_in()) {
                 <div class="col-md-12 col-lg-10">
                     <div class="wrap d-md-flex bg-color">
                         <div class="img-form">
-                            <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/register.svg'; ?>" alt="" class="img-fluid">
+
+                            <?php if (!empty($imageRegister)):
+                                $image_url = home_url() . '/wp-content/uploads/chamilo/' . $imageRegister;
+                            ?>
+
+                            <img src="<?php echo $image_url; ?>" alt="" class="img-fluid">
+
+                            <?php else: ?>
+                                <img src="<?php echo $chamilo->get_url_plugin_chamilo().'/images/register.svg'; ?>" alt="" class="img-fluid">
+                            <?php endif; ?>
+
                         </div>
-                        <div class="login-wrap p-4 p-md-5">
-                            <h2 class="title">Registro de usuario</h2>
+                        <div class="login-wrap">
+
+                            <div class="padding-login">
+                            <h2 class="title"><?php echo $titleRegister; ?></h2>
                             <?php if (!is_null($error_message)): ?>
                                 <div id="msg-error-rut" class="alert alert-danger">
                                     <?php echo $error_message; ?>
@@ -81,83 +99,95 @@ if (is_user_logged_in()) {
                                 Debe de ingresar un RUT Válido
                             </div>
                             <form method="post" action="" id="register-user" class="register-user">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="firstname">Nombres (*)</label>
-                                            <input type="text" class="form-control" name="firstname" id="firstname" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="lastname">Apellidos (*)</label>
-                                            <input type="text" class="form-control" name="lastname" id="lastname" required>
-                                        </div>
+                                <div class="form-group row">
+                                    <label for="firstname" class="col-sm-3 col-form-label">Nombres</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="firstname" id="firstname" required>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="email">Correo electrónico (*)</label>
-                                            <input type="email" class="form-control" id="email" name="email"
-                                                   aria-describedby="emailHelp" required>
-                                            <div id="email-status" class="alert alert-danger" role="alert" style="display: none;">
-                                            </div>
+
+                                <div class="form-group row">
+                                    <label for="lastname" class="col-sm-3 col-form-label">Apellidos</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="lastname" id="lastname" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="email" class="col-sm-3 col-form-label">Correo electrónico</label>
+                                    <div class="col-sm-9">
+                                        <input type="email" class="form-control" id="email" name="email"
+                                               aria-describedby="emailHelp" required>
+                                        <div id="email-status" class="alert alert-danger" role="alert" style="display: none;">
+                                        </div>
+                                        <?php if(!$hideInputsRegister): ?>
                                             <small id="emailHelp" class="form-text text-muted">
                                                 Este será tu usuario de acceso para ingresar, solo se aceptan minúsculas
                                             </small>
-                                        </div>
+                                        <?php endif; ?>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="password">Contraseña</label>
-                                            <input type="password" class="form-control" id="password" name="password"
-                                                   aria-describedby="passwordHelp" required>
-                                            <div id="paswordtrength"></div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="password" class="col-sm-3 col-form-label">Contraseña</label>
+                                    <div class="col-sm-9">
+                                        <input type="password" class="form-control" id="password" name="password"
+                                               aria-describedby="passwordHelp" required>
+                                        <div id="paswordtrength"></div>
+                                        <?php if(!$hideInputsRegister): ?>
                                             <small id="passwordHelp" class="form-text text-muted">
                                                 Establece la contraseña que utilizarás para acceder
                                                 (mayúsculas,minúsculas,caracteres especiales, sin espacios)
                                             </small>
-                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="country">Pais</label>
-                                            <select name="country" class="form-control" id="country" required>
-                                                <?php foreach ($countries as $country):
-                                                    $selected = '';
-                                                    if (strtoupper($country['alpha2']) == 'CL') {
-                                                        $selected = 'selected';
-                                                    }
-                                                    ?>
-                                                    <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
+
+                                <div class="form-group row">
+                                    <label for="country" class="col-sm-3 col-form-label">Pais</label>
+                                    <div class="col-sm-9">
+                                        <select name="country" class="form-control" id="country" required>
+                                            <?php foreach ($countries as $country):
+                                                $selected = '';
+                                                if (strtoupper($country['alpha2']) == 'CL') {
+                                                    $selected = 'selected';
+                                                }
+                                                ?>
+                                                <option value="<?php echo strtoupper($country['alpha2']); ?>" <?php echo $selected; ?>><?php echo $country['name']; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div id="input_dni" class="form-group" style="display:none;">
-                                            <label for="identifier">Nº Documento o Cédula de Identidad (*)</label>
-                                            <input type="text" name="identifier" class="form-control" id="identifier">
+                                </div>
+
+                                <div id="input_dni" class="form-group row" style="display:none;">
+                                    <label for="identifier" class="col-sm-3 col-form-label">Nº Documento o Cédula de Identidad (*)</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" name="identifier" class="form-control" id="identifier">
+                                        <?php if(!$hideInputsRegister): ?>
                                             <small id="identifier_help" class="form-text text-muted">
                                                 Escribe tu DNI o Documento de identidad
                                             </small>
-                                        </div>
-                                        <div id="input_rut" class="form-group">
-                                            <label for="rut">RUT Identificador Nacional (*)</label>
-                                            <input type="text" name="rut" class="form-control" id="rut"
-                                                   placeholder="Ej: 11222333-K">
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div id="input_rut" class="form-group row">
+                                    <label for="rut" class="col-sm-3 col-form-label">RUT Identificador Nacional</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" name="rut" class="form-control" id="rut"
+                                               placeholder="Ej: 11222333-K">
+                                        <?php if(!$hideInputsRegister): ?>
                                             <small id="rut_hep" class="form-text text-muted">
                                                 Ingresar RUN sin puntos, con guión y con dígito verificador. Ej: 11222333-K
                                             </small>
-                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                                <div class="help">
+
+                                <!--<div class="help">
                                     * Esta información la utilizaremos para tu certificado de aprobación.
-                                </div>
+                                </div>-->
+
                                 <div class="form-group">
                                     <button type="submit" id="register-submit" name="register-submit" value="register-submit"
                                             class="btn btn-primary btn-block" disabled>Registrarme
@@ -170,6 +200,8 @@ if (is_user_logged_in()) {
                                     ó <a href="<?php echo $urlLostPassword; ?>">¿Ha olvidado su contraseña?</a>
                                 </div>
                             </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

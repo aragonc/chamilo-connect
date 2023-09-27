@@ -121,7 +121,7 @@ function chamilo_submenu_pages_callback()
 
     if (isset($_POST['save-register'])) {
         $titleRegister = $_POST['title_register'];
-        $hideInputsRegister = isset($_POST['hide_inputs_description']) ? 1 : 0;
+        $hideInputsRegister = isset($_POST['hide_inputs_description_register']) ? 1 : 0;
 
         update_option('chamilo_register_title', $titleRegister);
         update_option('chamilo_register_inputs_description', $hideInputsRegister);
@@ -259,7 +259,7 @@ function chamilo_submenu_pages_callback()
                         <td>
                             <label for="hide_inputs_description_register">
                                 <input type="checkbox" name="hide_inputs_description_register"
-                                       id="hide_inputs_description" <?php checked($hideInputsRegister, true); ?>
+                                       id="hide_inputs_description_register" <?php checked($hideInputsRegister, true); ?>
                                        value="<?php echo $hideInputsRegister; ?>">
                                 Permite ocultar la descripción de los inputs del formulario de registro.
                             </label>
